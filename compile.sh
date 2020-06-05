@@ -3247,8 +3247,6 @@ _generate_compile_bash() {
 _generate_compile_bash_prog() {
 	"$scriptAbsoluteLocation" _true
 	
-	return
-	
 	rm "$scriptAbsoluteFolder"/ubiquitous_bash.sh
 	
 	#"$scriptAbsoluteLocation" _compile_bash cautossh cautossh
@@ -4181,7 +4179,12 @@ _compile_bash_installation_prog() {
 
 _compile_bash_program_prog() {	
 	export includeScriptList
-	true
+	
+	
+	includeScriptList+=( core__intermediate_layers.sh )
+	includeScriptList+=( core__intermediate_materials.sh )
+	
+	
 }
 
 _compile_bash_config_prog() {	

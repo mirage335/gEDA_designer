@@ -1,3 +1,9 @@
 [submodule "_lib/ubiquitous_bash"]
 	path = _lib/ubiquitous_bash
 	url = git@github.com:mirage335/ubiquitous_bash.git
+[submodule "_lib/30MHzLowPass"]
+	path = _lib/30MHzLowPass
+	url = git@github.com:mirage335/30MhzLowPass.git
+[submodule "_lib/gEDA_Template"]
+	path = _lib/gEDA_Template
+	url = git@github.com:mirage335/gEDA_Template.git

@@ -8,7 +8,31 @@ See license.txt for gEDA_designer license conditions.
 # Design
 
 
+# Dependencies
+
+Required programs are gEDA and similar applications typically available from a typical Linux distribution such as Debian Stable. Just run "./ubiquitous_bash.sh _setup" or "./ubiquitous_bash.sh _test" to install/check.
+
+Optional programs used for autorouting (automatic wiring of PCB traces) include "pcb-ioAutorouter" and "Freerouting" . Self-contained versions of these are available. Beware of the limitations of autorouting if these programs are used. Carefully consider unwanted capacitance, unwanted inductance, ground loops, and impedance matching.
+
+
 # Safety
+
+
+
+
+# Reference
+
+
+
+# Third Party Copyright
+
+All third-party files incorporated retain the licenses provided by their original authors. Incorporated works may include...
+
+## generate-gerbers.sh - Shawn Nock - "_lib/generate-gerbers"
+
+Original 'generate-gerbers.sh' by Shawn Nock retains original MIT license as stated by "_lib/generate-gerbers". Some derived code included in this project may also retain this license. All other code is licensed or relicensed, under GPLv3.
+
+Further, author "mirage335" wishes to officially extend acknowledgement and gratitude. This script has long been a crucial resource, allowing efficient, repeatable, and frequent PCB manufacturing.
 
 
 __Copyright__
