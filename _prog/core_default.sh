@@ -1,0 +1,2 @@
+
+_declare_scope_geda

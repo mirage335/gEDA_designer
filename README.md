@@ -2,6 +2,8 @@ Copyright (C) 2020 mirage335
 See the end of the file for license conditions.
 See license.txt for gEDA_designer license conditions.
 
+Designer scripts using gEDA. Design typical assembled circuits. Output typical manufacturing specifications. Part of gEDA_producer successor to gedaProduction . 
+
 # Usage
 
 

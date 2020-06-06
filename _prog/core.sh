@@ -9,9 +9,6 @@
 
 
 
-
-
-
 # # ATTENTION: Add to ops!
 _refresh_anchors_task() {
 	true

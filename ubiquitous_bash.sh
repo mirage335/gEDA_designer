@@ -16602,6 +16602,11 @@ _setup_prog() {
 
 
 
+
+
+
+
+
 # # ATTENTION: Add to ops!
 _refresh_anchors_task() {
 	true
@@ -16680,6 +16685,388 @@ _main() {
 	
 	_stop
 }
+
+
+_set_geda_userShortHome() {
+	export actualFakeHome="$shortFakeHome"
+	export fakeHomeEditLib="false"
+	export keepFakeHome="true"
+}
+
+_set_geda_editShortHome() {
+	export actualFakeHome="$shortFakeHome"
+	export fakeHomeEditLib="true"
+	export keepFakeHome="true"
+}
+
+_set_geda_userFakeHome() {
+	export actualFakeHome="$instancedFakeHome"
+	export fakeHomeEditLib="false"
+	export keepFakeHome="true"
+}
+
+_set_geda_editFakeHome() {
+	export actualFakeHome="$globalFakeHome"
+	export fakeHomeEditLib="false"
+	export keepFakeHome="true"
+}
+
+
+# ATTENTION: Sets whether global fakeHome directory is used in editable mode for compile jobs and similar!
+# DANGER: Setting 'user' non-editable is known to break automatic setting of 'preferences' needed for some applications in some unusual situations!
+# WARNING: Setting 'user' non-editable is known to possibly cause warning messages with gdb and/or ddd .
+_set_geda_fakeHome() {
+	_set_geda_userFakeHome
+	#_set_geda_editFakeHome
+}
+
+
+_reset_geda_sketchDir() {
+	export se_sketch=
+	export se_sketchDir=
+	export se_out=
+	
+	export se_basename=
+}
+
+_validate_geda_sketchDir_buildOut() {
+	! find . -maxdepth 1 -type f -name '*.pcb' && return 1
+	
+	return 0
+}
+
+_validate_geda_sketchDir() {
+	# WARNING: No known plausible justification. May interfere with building multiple layouts.
+	#! [[ -e "$se_sketch" ]] && return 1
+	
+	! [[ -e "$se_sketchDir" ]] && return 1
+	! [[ -d "$se_sketchDir" ]] && return 1
+	
+	# WARNING: Without '*.pcb' files (layout), it will not be possible to build any standard geometery files!
+	if ! _validate_geda_sketchDir_buildOut
+	then
+		_messagePlan_bad 'missing: build: layout'
+		
+		# WARNING: Without even a schematic, there is nothing for the designer to work on. Begin with a template.
+		#if ! find . -maxdepth 1 -type f -name '*.pcb' > /dev/null 2>&1 && ! find . -maxdepth 1 -type f -name '*.sch' > /dev/null 2>&1
+		if ! find . -maxdepth 1 -type f -name '*.sch' > /dev/null 2>&1
+		then
+			_messagePlain_bad 'fail: missing: schematic'
+			return 1
+		fi
+		
+		#return 1
+	fi
+	
+	return 0
+}
+
+
+_set_geda_sketchDir() {
+	if [[ -d "$1" ]] && [[ -e "$1" ]]
+	then
+		_reset_geda_sketchDir
+		export se_sketchDir=$(_getAbsoluteLocation "$1")
+		export se_basename=$(basename "$se_sketchDir")
+		export se_out="$se_sketchDir"/_build
+		
+		_validate_geda_sketchDir && return 0
+		
+		#Fallback. Fatal error, tool.
+		_messagePlain_bad 'fail: _set_geda_sketchDir"'
+		return 1
+	fi
+	
+	if [[ -e "$1" ]]
+	then
+		_reset_geda_sketchDir
+		export se_sketchDir=$(_findDir "$1")
+		export se_sketchDir=$(_getAbsoluteLocation "$se_sketchDir")
+		export se_basename=$(basename "$se_sketchDir")
+		export se_out="$se_sketchDir"/_build
+		
+		_validate_geda_sketchDir && return 0
+		
+		#Fallback. Fatal error, tool.
+		_messagePlain_bad 'fail: _set_geda_sketchDir"'
+		return 1
+	fi
+	
+	_reset_geda_sketchDir
+	export se_sketchDir=$(_getAbsoluteLocation "$PWD")
+	export se_basename=$(basename "$se_sketchDir")
+	export se_out="$se_sketchDir"/_build
+	
+	_validate_geda_sketchDir && return 0
+	
+	#Fallback. Fatal error, tool.
+	_messagePlain_bad 'fail: _set_geda_sketchDir"'
+	return 1
+}
+
+
+
+_set_geda_var() {
+	if ! _set_geda_sketchDir "$@"
+	then
+		return 1
+	fi
+	
+	_messagePlain_probe_var se_sketch
+	_messagePlain_probe_var se_sketchDir
+	_messagePlain_probe_var se_out
+	
+	_messagePlain_probe_var se_basename
+	
+	return 0
+}
+
+
+
+
+
+
+
+
+
+
+
+_gschem_executable() {
+	gschem "$@"
+}
+
+# ATTENTION: Overload with 'ops.sh' .
+# Mostly serves as an example. The 'gschem' schematic editor has some configuration variables a user may wish to override, but there is no known reason these would need to be set on a per-designer installation basis.
+_gschem_method() {
+	#export gschemExecutable=$(type -p pcb)
+	#export gschemExecutable=
+	#_fakeHome "$scriptAbsoluteLocation" --parent _gschem_executable "$@"
+	#_gschem_executable "$@"
+	
+	_fakeHome "$scriptAbsoluteLocation" --parent _gschem_executable "$@"
+	#gschem "$@"
+}
+
+
+_gschem_deconfigure_procedure() {
+	true
+}
+
+_gschem_deconfigure_method() {
+	_fakeHome "$scriptAbsoluteLocation" --parent _gschem_deconfigure_procedure "$@"
+}
+
+
+
+
+
+
+# Placeholder. Typically such extensive core (hook) functions are not required.
+
+
+
+
+_declare_scope_geda() {
+
+		_scope_prog() {
+		[[ "$ub_scope_name" == "" ]] && export ub_scope_name='geda'
+	}
+
+
+	_scope_var_here_prog() {
+		cat << CZXWXcRMTo8EmM8i4d
+
+#Global Variables and Defaults
+#Sketch (Scope Current, SEssion)
+export se_sketch="$se_sketch"
+export se_sketchDir="$se_sketchDir"
+export se_out="$se_out"
+
+#Debug
+export se_remotePort="$se_remotePort"
+export se_sym="$se_sym"
+
+CZXWXcRMTo8EmM8i4d
+	}
+
+	_scope_attach_prog() {
+		_messagePlain_nominal '_scope_attach: prog'
+		
+		if ! _set_geda_var "$@"
+		then
+			_messagePlain_bad 'fail: _set_geda_var'
+			_stop 1
+		fi
+		
+		_messagePlain_probe_var ub_specimen
+		
+		#_set_geda_userShortHome
+		#_set_geda_editShortHome
+		_set_geda_fakeHome
+		
+		_messagePlain_nominal '_scope_attach: prog: deploy'
+		
+		#_scope_command_write _true
+	}
+
+
+
+
+
+
+}
+
+
+# Only relevant if other tools are also supported by designer. (eg. KiCAD)
+_scope_geda() {
+	_declare_scope_geda
+	_scope "$@"
+}
+
+
+
+
+
+
+
+# Mostly serves as an example.
+
+
+# WARNING: Ignores all sketch ops. Intended for manual IDE configuration management and testing.
+# Mostly serves as an example.
+_gschem_user_sequence() {
+	_start
+	
+	if ! _set_geda_var "$@"
+	then
+		true
+		#_stop 1
+	fi
+	
+	_import_ops_geda_sketch
+	_ops_geda_sketch
+	
+	_set_geda_userFakeHome
+	#_set_geda_editFakeHome
+	
+	_gschem_method "$@"
+	
+	_set_geda_userFakeHome
+	#_set_geda_editFakeHome
+	_gschem_deconfigure_method
+	
+	_stop
+}
+
+_gschem_user() {
+	"$scriptAbsoluteLocation" _gschem_user_sequence "$@"
+}
+
+
+
+# WARNING: Ignores all sketch ops. Intended for manual IDE configuration management and testing.
+# Mostly serves as an example.
+_gschem_edit_sequence() {
+	_start
+	
+	if ! _set_geda_var "$@"
+	then
+		true
+		#_stop 1
+	fi
+	
+	_import_ops_geda_sketch
+	_ops_geda_sketch
+	
+	#_set_geda_userFakeHome
+	_set_geda_editFakeHome
+	
+	_gschem_method "$@"
+	
+	#_set_geda_userFakeHome
+	_set_geda_editFakeHome
+	_gschem_deconfigure_method
+	
+	_stop
+}
+
+_gschem_edit() {
+	"$scriptAbsoluteLocation" _gschem_user_sequence "$@"
+}
+
+_scope_geda_gschem_procedure() {
+	_messagePlain_nominal 'gschem'
+	mkdir -p "$shortTmp"/_build
+	
+	
+	if ! _set_geda_var "$@"
+	then
+		true
+		#_stop 1
+	fi
+	
+	_import_ops_geda_sketch
+	_ops_geda_sketch
+	
+	# Highly unlikely to be required.
+	cd "$ub_specimen"
+	#_geda_compile_preferences_procedure
+	
+	_set_geda_fakeHome
+	#_set_geda_userShortHome
+	#_set_geda_editShortHome
+	
+	_gschem_method "$@"
+	
+	_set_geda_userShortHome
+	_gschem_deconfigure_method
+}
+
+# WARNING: No known production use.
+_scope_geda_gschem() {
+	local shiftParam1
+	shiftParam1="$1"
+	shift
+	_declare_scope_geda
+	_scope "$shiftParam1" "_scope_geda_gschem_procedure" "$@"
+}
+
+
+#Redundant within scope. Required by any subshell operations (eg. _compile).
+_import_ops_geda_sketch() {
+	if [[ -e "$se_sketchDir"/ops ]]
+	then
+		_messagePlain_nominal 'sketch ops: found: sketch ops'
+		. "$se_sketchDir"/ops
+	fi
+	
+	if [[ -e "$se_sketchDir"/ops.sh ]]
+	then
+		_messagePlain_nominal 'sketch ops: found: sketch ops'
+		. "$se_sketchDir"/ops.sh
+	fi
+	
+	! [[ -e "$se_sketchDir"/ops ]] && ! [[ -e "$se_sketchDir"/ops.sh ]] && _messagePlain_warn 'sketch ops: missing: sketch ops' && return 1
+	
+	#_messagePlain_warn 'sketch ops: missing: sketch ops'
+	#return 1
+	
+	return 0
+}
+
+
+
+
+# WARNING: No known production use.
+#Intended to be used as an ops override.
+_ops_geda_sketch() {
+	true
+}
+
+
+
+
+_declare_scope_geda
 
 #currentReversePort=""
 #currentMatchingReversePorts=""
@@ -18115,6 +18502,22 @@ _compile_bash_program_prog() {
 	includeScriptList+=( core__intermediate_materials.sh )
 	
 	
+	includeScriptList+=( core__geda_env.sh )
+	includeScriptList+=( core__geda_bin_.sh )
+	includeScriptList+=( core__geda.sh )
+	
+	includeScriptList+=( core__geda_scope.sh )
+	
+	includeScriptList+=( core__geda_app.sh )
+	includeScriptList+=( core__geda_app_scope.sh )
+	
+	
+	includeScriptList+=( core__geda__build_ops.sh )
+	includeScriptList+=( core__geda__build_ops_default.sh )
+	
+	
+	#includeScriptList+=( core.sh )
+	includeScriptList+=( core_default.sh )
 }
 
 _compile_bash_config_prog() {	

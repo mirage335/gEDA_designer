@@ -4185,6 +4185,22 @@ _compile_bash_program_prog() {
 	includeScriptList+=( core__intermediate_materials.sh )
 	
 	
+	includeScriptList+=( core__geda_env.sh )
+	includeScriptList+=( core__geda_bin_.sh )
+	includeScriptList+=( core__geda.sh )
+	
+	includeScriptList+=( core__geda_scope.sh )
+	
+	includeScriptList+=( core__geda_app.sh )
+	includeScriptList+=( core__geda_app_scope.sh )
+	
+	
+	includeScriptList+=( core__geda__build_ops.sh )
+	includeScriptList+=( core__geda__build_ops_default.sh )
+	
+	
+	#includeScriptList+=( core.sh )
+	includeScriptList+=( core_default.sh )
 }
 
 _compile_bash_config_prog() {	
