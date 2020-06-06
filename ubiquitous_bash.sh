@@ -16600,12 +16600,7 @@ _setup_prog() {
 
 
 
-_gEDA_designer_out_geometery() {
-	_geda_layers_intermediate "$@"
-}
-_gEDA_designer_geometery() {
-	_gEDA_designer_out_geometery "$@"
-}
+
 
 
 
@@ -16691,7 +16686,7 @@ _main() {
 
 
 
-_geda_layers_intermediate___extract_layers() {
+_geda_compile___file_pcb() {
 	_messagePlain_nominal 'Compile: extract_layers'
 	_messagePlain_good 'found: '"$1"
 	
@@ -16721,10 +16716,9 @@ _geda_layers_intermediate___extract_layers() {
 
 
 # First parameter must be '*.pcb' or directory .
-_geda_layers_intermediate__build_procedure() {
-	
+_geda_compile__build_procedure() {
 	# WARNING: May be imperfect.
-	# Ignore directory parameter.
+	# Ignore directory parameter (already validated).
 	[[ "$1" != "" ]] && [[ -d "$1" ]] && shift
 	[[ "$1" != "" ]] && [[ "$1" != *".pcb" ]] && _messagePlain_bad 'fail: invalid parameter input' && return 1
 	
@@ -16732,19 +16726,19 @@ _geda_layers_intermediate__build_procedure() {
 	if [[ "$1" != "" ]] && [[ "$1" == *".pcb" ]] && [[ -e "$1" ]]
 	then
 		# Single file requested.
-		_geda_layers_intermediate___extract_layers "$@"
+		_geda_compile___file_pcb "$@"
 		return 0
 	elif [[ "$1" != "" ]]
 	then
 		_messagePlain_bad 'fail: invalid parameter input' && return 1
 	fi
 	
-	find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' -exec "$scriptAbsoluteLocation" _geda_layers_intermediate___extract_layers {} "$@" \;
+	find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' -exec "$scriptAbsoluteLocation" _geda_compile___file_pcb {} "$@" \;
 }
 
 
 
-_geda_layers_intermediate__preferences_procedure() {
+_geda_compile__preferences_procedure() {
 	# Example ONLY.
 	#_set_geda_fakeHome
 	#_messagePlain_nominal '_geda...: compile: set: build path'
@@ -16756,12 +16750,12 @@ _geda_layers_intermediate__preferences_procedure() {
 	#_messagePlain_nominal '_geda...: compile: combine: full'
 	#_geda_method_special --save-prefs --pref build.path="$shortTmp"/_build "$@"
 	
-	_geda_layers_intermediate__build_procedure "$@"
+	_geda_compile__build_procedure "$@"
 }
 
 
 
-_geda_layers_intermediate__procedure() {
+_geda_compile__procedure() {
 	local localFunctionEntryPWD
 	localFunctionEntryPWD="$PWD"
 	
@@ -16776,7 +16770,7 @@ _geda_layers_intermediate__procedure() {
 	
 	
 	
-	_geda_layers_intermediate__preferences_procedure "$se_sketchDir"
+	_geda_compile__preferences_procedure "$@"
 	
 	
 	
@@ -16788,7 +16782,7 @@ _geda_layers_intermediate__procedure() {
 }
 
 
-_geda_layers_intermediate__sequence() {
+_geda_compile__sequence() {
 	_start
 	
 	if ! _set_geda_var "$@"
@@ -16801,7 +16795,7 @@ _geda_layers_intermediate__sequence() {
 	_ops_geda_sketch
 	
 	#cd "$ub_specimen"
-	#_geda_layers_intermediate__preferences_procedure
+	#_geda_compile__preferences_procedure
 	
 	_set_geda_fakeHome
 	#_set_geda_userShortHome
@@ -16809,7 +16803,7 @@ _geda_layers_intermediate__sequence() {
 	
 	#_gschem_method "$@"
 	#_gschem_executable "$@"
-	_geda_layers_intermediate__procedure "$@"
+	_geda_compile__procedure "$@"
 	
 	_set_geda_fakeHome
 	_gschem_deconfigure_method
@@ -16818,13 +16812,17 @@ _geda_layers_intermediate__sequence() {
 }
 
 
-_geda_layers_intermediate() {
-	"$scriptAbsoluteLocation" _geda_layers_intermediate__sequence "$@"
+_geda_compile() {
+	"$scriptAbsoluteLocation" _geda_compile__sequence "$@"
 }
 
+_gEDA_designer_out_geometery() {
+	_geda_compile "$@"
+}
+_gEDA_designer_geometery() {
+	_gEDA_designer_out_geometery "$@"
+}
 
-
- 
 
 
 _set_geda_userShortHome() {
@@ -16870,7 +16868,7 @@ _reset_geda_sketchDir() {
 }
 
 _validate_geda_sketchDir_buildOut() {
-	! find . -maxdepth 1 -type f -name '*.pcb' > /dev/null 2>&1 && return 1
+	find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' | _condition_lines_zero && return 1
 	
 	return 0
 }
@@ -16885,11 +16883,11 @@ _validate_geda_sketchDir() {
 	# WARNING: Without '*.pcb' files (layout), it will not be possible to build any standard geometery files!
 	if ! _validate_geda_sketchDir_buildOut
 	then
-		_messagePlan_bad 'missing: build: layout'
+		_messagePlain_bad 'missing: build: layout'
 		
 		# WARNING: Without even a schematic, there is nothing for the designer to work on. Begin with a template.
-		#if ! find . -maxdepth 1 -type f -name '*.pcb' > /dev/null 2>&1 && ! find . -maxdepth 1 -type f -name '*.sch' > /dev/null 2>&1
-		if ! find . -maxdepth 1 -type f -name '*.sch' > /dev/null 2>&1
+		#if find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' | _condition_lines_zero && find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero
+		if find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero
 		then
 			_messagePlain_bad 'fail: missing: schematic'
 			return 1
@@ -18673,8 +18671,7 @@ _compile_bash_program_prog() {
 	export includeScriptList
 	
 	
-	includeScriptList+=( core___out_layers_intermediate.sh )
-	includeScriptList+=( core___out_materials_intermediate.sh )
+	includeScriptList+=( core__geda___build_compile.sh )
 	
 	
 	includeScriptList+=( core__geda_env.sh )

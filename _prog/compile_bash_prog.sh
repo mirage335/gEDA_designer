@@ -109,8 +109,7 @@ _compile_bash_program_prog() {
 	export includeScriptList
 	
 	
-	includeScriptList+=( core___out_layers_intermediate.sh )
-	includeScriptList+=( core___out_materials_intermediate.sh )
+	includeScriptList+=( core__geda___build_compile.sh )
 	
 	
 	includeScriptList+=( core__geda_env.sh )

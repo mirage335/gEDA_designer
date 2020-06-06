@@ -42,7 +42,7 @@ _reset_geda_sketchDir() {
 }
 
 _validate_geda_sketchDir_buildOut() {
-	! find . -maxdepth 1 -type f -name '*.pcb' > /dev/null 2>&1 && return 1
+	find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' | _condition_lines_zero && return 1
 	
 	return 0
 }
@@ -57,11 +57,11 @@ _validate_geda_sketchDir() {
 	# WARNING: Without '*.pcb' files (layout), it will not be possible to build any standard geometery files!
 	if ! _validate_geda_sketchDir_buildOut
 	then
-		_messagePlan_bad 'missing: build: layout'
+		_messagePlain_bad 'missing: build: layout'
 		
 		# WARNING: Without even a schematic, there is nothing for the designer to work on. Begin with a template.
-		#if ! find . -maxdepth 1 -type f -name '*.pcb' > /dev/null 2>&1 && ! find . -maxdepth 1 -type f -name '*.sch' > /dev/null 2>&1
-		if ! find . -maxdepth 1 -type f -name '*.sch' > /dev/null 2>&1
+		#if find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' | _condition_lines_zero && find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero
+		if find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero
 		then
 			_messagePlain_bad 'fail: missing: schematic'
 			return 1
