@@ -2,7 +2,12 @@
 
 
 
-
+_gEDA_designer_out_geometery() {
+	_geda_layers_intermediate "$@"
+}
+_gEDA_designer_geometery() {
+	_gEDA_designer_out_geometery "$@"
+}
 
 
 
