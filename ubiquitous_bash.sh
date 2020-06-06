@@ -16616,14 +16616,13 @@ _refresh_anchors_task() {
 
 _refresh_anchors_specific() {
 	true
-	# EXAMPLE .
-	#_refresh_anchors_specific_single_procedure _gEDA_designer_out_cad
+	
+	_refresh_anchors_specific_single_procedure _gEDA_designer_geometery
 }
 
 _refresh_anchors_user() {
 	true
-	# EXAMPLE .
-	#_refresh_anchors_user_single_procedure _gEDA_designer_out_cad
+	_refresh_anchors_user_single_procedure _gEDA_designer_geometery
 }
 
 _associate_anchors_request() {
@@ -16633,9 +16632,9 @@ _associate_anchors_request() {
 		#return
 	fi
 	
-	# EXAMPLE .
-	#_messagePlain_request 'association: dir, *.pcb'
-	#echo _gEDA_designer_out_cad"$ub_anchor_suffix"
+	
+	_messagePlain_request 'association: dir, *.pcb'
+	echo _gEDA_designer_geometery"$ub_anchor_suffix"
 }
 
 
@@ -16645,8 +16644,7 @@ _refresh_anchors() {
 	
 	cp -a "$scriptAbsoluteFolder"/_anchor "$scriptAbsoluteFolder"/_scope
 	
-	# EXAMPLE .
-	#cp -a "$scriptAbsoluteFolder"/_anchor "$scriptAbsoluteFolder"/_out_cad
+	cp -a "$scriptAbsoluteFolder"/_anchor "$scriptAbsoluteFolder"/_gEDA_designer_geometery
 	
 	# EXAMPLE - Internal developer test function.
 	#cp -a "$scriptAbsoluteFolder"/_anchor "$scriptAbsoluteFolder"/_out_cad_30MHzLowPass
@@ -16685,6 +16683,148 @@ _main() {
 	
 	_stop
 }
+
+
+
+_geda_compile__extract_layers() {
+	_messagePlain_nominal 'Compile: extract_layers'
+	_messagePlain_good 'found: '"$1"
+	
+	local currentInput
+	currentInput=$(_getAbsoluteLocation "$1")
+	
+	local currentInput_base
+	currentInput_base=$(basename "$currentInput")
+	
+	local currentInput_name
+	currentInput_name="${currentInput_base%.*}"
+	
+	_messagePlain_probe_var currentInput_name
+	
+	
+	
+	
+	mkdir -p "$se_out_tmp"/_raw/"$currentInput_name"
+	mkdir -p "$se_out"/_raw/"$currentInput_name"
+	
+	#pcb -x gerber --all-layers --name-style fixed --gerberfile ./_build/30MHzLowPass ./30MHzLowPass.pcb
+	pcb -x gerber --all-layers --name-style fixed --gerberfile "$se_out_tmp"/_raw/"$currentInput_name"/"$currentInput_name" "$currentInput"
+	
+	cp "$se_out_tmp"/_raw/"$currentInput_name"/* "$se_out"/_raw/"$currentInput_name"/
+	
+}
+
+
+# First parameter must be '*.pcb' or directory .
+_geda_compile_build_procedure() {
+	
+	# WARNING: May be imperfect.
+	# Ignore directory parameter.
+	[[ "$1" != "" ]] && [[ -d "$1" ]] && shift
+	[[ "$1" != "" ]] && [[ "$1" != *".pcb" ]] && _messagePlain_bad 'fail: invalid parameter input' && return 1
+	
+	
+	if [[ "$1" != "" ]] && [[ "$1" == *".pcb" ]] && [[ -e "$1" ]]
+	then
+		# Single file requested.
+		_geda_compile__extract_layers "$@"
+		return 0
+	elif [[ "$1" != "" ]]
+	then
+		_messagePlain_bad 'fail: invalid parameter input' && return 1
+	fi
+	
+	find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' -exec "$scriptAbsoluteLocation" _geda_compile__extract_layers {} "$@" \;
+}
+
+
+
+_geda_compile_preferences_procedure() {
+	# Example ONLY.
+	#_set_geda_fakeHome
+	#_messagePlain_nominal '_geda...: compile: set: build path'
+	#_geda_method_special --save-prefs --pref build.path="$shortTmp"/_build
+	
+	# Example ONLY.
+	# ATTENTION: WARNING: Full operation combination. Undefined behavior may occur.
+	#_set_arduino_fakeHome
+	#_messagePlain_nominal '_geda...: compile: combine: full'
+	#_geda_method_special --save-prefs --pref build.path="$shortTmp"/_build "$@"
+	
+	_geda_compile_build_procedure "$@"
+}
+
+
+
+_geda_compile_procedure() {
+	local localFunctionEntryPWD
+	localFunctionEntryPWD="$PWD"
+	
+	_messagePlain_nominal 'Compile.'
+	
+	#Current directory is generally irrelevant to typical compile, and if different from sketchDir, may cause problems.
+	cd "$se_sketchDir"
+	
+	export se_out_tmp="$shortTmp"/_build
+	mkdir -p "$se_out_tmp"
+	mkdir -p "$se_out"
+	
+	
+	
+	_geda_compile_preferences_procedure "$se_sketchDir"
+	
+	
+	
+	
+	#cp "$shortTmp"/_build/*.bin "$se_out"/
+	
+	
+	cd "$localFunctionEntryPWD"
+}
+
+
+_geda_compile_sequence() {
+	_start
+	
+	if ! _set_geda_var "$@"
+	then
+		#true
+		_stop 1
+	fi
+	
+	_import_ops_geda_sketch
+	_ops_geda_sketch
+	
+	#cd "$ub_specimen"
+	#_geda_compile_preferences_procedure
+	
+	_set_geda_fakeHome
+	#_set_geda_userShortHome
+	#_set_geda_editShortHome
+	
+	#_gschem_method "$@"
+	#_gschem_executable "$@"
+	_geda_compile_procedure "$@"
+	
+	_set_geda_fakeHome
+	_gschem_deconfigure_method
+	
+	_stop
+}
+
+
+_geda_compile() {
+	"$scriptAbsoluteLocation" _geda_compile_sequence "$@"
+}
+
+_gEDA_designer_out_geometery() {
+	_geda_compile "$@"
+}
+_gEDA_designer_geometery() {
+	_gEDA_designer_out_geometery "$@"
+}
+
+ 
 
 
 _set_geda_userShortHome() {
@@ -16730,7 +16870,7 @@ _reset_geda_sketchDir() {
 }
 
 _validate_geda_sketchDir_buildOut() {
-	! find . -maxdepth 1 -type f -name '*.pcb' && return 1
+	! find . -maxdepth 1 -type f -name '*.pcb' > /dev/null 2>&1 && return 1
 	
 	return 0
 }
@@ -16836,15 +16976,15 @@ _gschem_executable() {
 }
 
 # ATTENTION: Overload with 'ops.sh' .
-# Mostly serves as an example. The 'gschem' schematic editor has some configuration variables a user may wish to override, but there is no known reason these would need to be set on a per-designer installation basis.
+# Mostly serves as a hook and example. The 'gschem' schematic editor has some configuration variables a user may wish to override, but there is no known reason these would need to be set on a per-designer installation basis.
 _gschem_method() {
 	#export gschemExecutable=$(type -p pcb)
 	#export gschemExecutable=
 	#_fakeHome "$scriptAbsoluteLocation" --parent _gschem_executable "$@"
 	#_gschem_executable "$@"
 	
-	_fakeHome "$scriptAbsoluteLocation" --parent _gschem_executable "$@"
-	#gschem "$@"
+	#_fakeHome "$scriptAbsoluteLocation" --parent _gschem_executable "$@"
+	_gschem_executable "$@"
 }
 
 
@@ -16853,11 +16993,43 @@ _gschem_deconfigure_procedure() {
 }
 
 _gschem_deconfigure_method() {
-	_fakeHome "$scriptAbsoluteLocation" --parent _gschem_deconfigure_procedure "$@"
+	true
+	#_fakeHome "$scriptAbsoluteLocation" --parent _gschem_deconfigure_procedure "$@"
 }
 
 
 
+
+
+
+
+
+
+_pcb_executable() {
+	pcb "$@"
+}
+
+# ATTENTION: Overload with 'ops.sh' .
+# Mostly serves as a hook and example. The 'pcb' schematic editor has some configuration variables a user may wish to override, but there is no known reason these would need to be set on a per-designer installation basis.
+_pcb_method() {
+	#export pcbExecutable=$(type -p pcb)
+	#export pcbExecutable=
+	#_fakeHome "$scriptAbsoluteLocation" --parent _pcb_executable "$@"
+	#_pcb_executable "$@"
+	
+	#_fakeHome "$scriptAbsoluteLocation" --parent _pcb_executable "$@"
+	_pcb_executable "$@"
+}
+
+
+_pcb_deconfigure_procedure() {
+	true
+}
+
+_pcb_deconfigure_method() {
+	true
+	#_fakeHome "$scriptAbsoluteLocation" --parent _pcb_deconfigure_procedure "$@"
+}
 
 
 
@@ -16881,6 +17053,8 @@ _declare_scope_geda() {
 export se_sketch="$se_sketch"
 export se_sketchDir="$se_sketchDir"
 export se_out="$se_out"
+
+export se_basename="$se_basename"
 
 #Debug
 export se_remotePort="$se_remotePort"
@@ -17008,7 +17182,8 @@ _scope_geda_gschem_procedure() {
 	_import_ops_geda_sketch
 	_ops_geda_sketch
 	
-	# Highly unlikely to be required.
+	# Highly unlikely to be required for scope.
+	# May be essential for other functions.
 	cd "$ub_specimen"
 	#_geda_compile_preferences_procedure
 	
@@ -18498,8 +18673,8 @@ _compile_bash_program_prog() {
 	export includeScriptList
 	
 	
-	includeScriptList+=( core__intermediate_layers.sh )
-	includeScriptList+=( core__intermediate_materials.sh )
+	includeScriptList+=( core___out_layers_intermediate.sh )
+	includeScriptList+=( core___out_materials_intermediate.sh )
 	
 	
 	includeScriptList+=( core__geda_env.sh )

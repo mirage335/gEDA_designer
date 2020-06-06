@@ -16,6 +16,8 @@ export se_sketch="$se_sketch"
 export se_sketchDir="$se_sketchDir"
 export se_out="$se_out"
 
+export se_basename="$se_basename"
+
 #Debug
 export se_remotePort="$se_remotePort"
 export se_sym="$se_sym"

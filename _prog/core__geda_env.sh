@@ -42,7 +42,7 @@ _reset_geda_sketchDir() {
 }
 
 _validate_geda_sketchDir_buildOut() {
-	! find . -maxdepth 1 -type f -name '*.pcb' && return 1
+	! find . -maxdepth 1 -type f -name '*.pcb' > /dev/null 2>&1 && return 1
 	
 	return 0
 }

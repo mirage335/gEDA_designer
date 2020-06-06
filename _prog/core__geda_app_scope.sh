@@ -12,7 +12,8 @@ _scope_geda_gschem_procedure() {
 	_import_ops_geda_sketch
 	_ops_geda_sketch
 	
-	# Highly unlikely to be required.
+	# Highly unlikely to be required for scope.
+	# May be essential for other functions.
 	cd "$ub_specimen"
 	#_geda_compile_preferences_procedure
 	
