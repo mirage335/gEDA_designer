@@ -16610,19 +16610,18 @@ _setup_prog() {
 # # ATTENTION: Add to ops!
 _refresh_anchors_task() {
 	true
-	#cp -a "$scriptAbsoluteFolder"/_anchor "$scriptAbsoluteFolder"/_task_arduino_compile_blink
-	#cp -a "$scriptAbsoluteFolder"/_anchor "$scriptAbsoluteFolder"/_task_scope_arduinoide_blink
+	#cp -a "$scriptAbsoluteFolder"/_anchor "$scriptAbsoluteFolder"/_task_geometry_30MHzLowPass
 }
 
 _refresh_anchors_specific() {
 	true
 	
-	_refresh_anchors_specific_single_procedure _gEDA_designer_geometery
+	_refresh_anchors_specific_single_procedure _gEDA_designer_geometry
 }
 
 _refresh_anchors_user() {
 	true
-	_refresh_anchors_user_single_procedure _gEDA_designer_geometery
+	_refresh_anchors_user_single_procedure _gEDA_designer_geometry
 }
 
 _associate_anchors_request() {
@@ -16634,7 +16633,7 @@ _associate_anchors_request() {
 	
 	
 	_messagePlain_request 'association: dir, *.pcb'
-	echo _gEDA_designer_geometery"$ub_anchor_suffix"
+	echo _gEDA_designer_geometry"$ub_anchor_suffix"
 }
 
 
@@ -16644,10 +16643,7 @@ _refresh_anchors() {
 	
 	cp -a "$scriptAbsoluteFolder"/_anchor "$scriptAbsoluteFolder"/_scope
 	
-	cp -a "$scriptAbsoluteFolder"/_anchor "$scriptAbsoluteFolder"/_gEDA_designer_geometery
-	
-	# EXAMPLE - Internal developer test function.
-	#cp -a "$scriptAbsoluteFolder"/_anchor "$scriptAbsoluteFolder"/_out_cad_30MHzLowPass
+	cp -a "$scriptAbsoluteFolder"/_anchor "$scriptAbsoluteFolder"/_gEDA_designer_geometry
 	
 	_tryExec "_refresh_anchors_task"
 	
@@ -16686,24 +16682,100 @@ _main() {
 
 
 _geda_compile_intermediate_layers() {
+	_messagePlain_nominal 'Compile: intermediate_layers'
+	export intermediate_layers="$se_out_tmp"/_intermediate/layers/"$currentInput_name"
 	
-	mkdir -p "$se_out_tmp"/_intermediate/layers/"$currentInput_name"
+	mkdir -p "$intermediate_layers"
 	mkdir -p "$se_out"/_intermediate/layers/"$currentInput_name"
 	
 	#pcb -x gerber --all-layers --name-style fixed --gerberfile ./_build/30MHzLowPass ./30MHzLowPass.pcb
-	pcb -x gerber --all-layers --name-style fixed --gerberfile "$se_out_tmp"/_intermediate/layers/"$currentInput_name"/"$currentInput_name" "$currentInput"
+	_messagePlain_probe_cmd pcb -x gerber --all-layers --name-style fixed --gerberfile "$intermediate_layers"/"$currentInput_name" "$currentInput"
 	
-	cp "$se_out_tmp"/_intermediate/layers/"$currentInput_name"/* "$se_out"/_intermediate/layers/"$currentInput_name"/
+	cp "$intermediate_layers"/* "$se_out"/_intermediate/layers/"$currentInput_name"/
+	
+}
+
+_geda_compile_intermediate_materials() {
+	_messagePlain_nominal 'Compile: intermediate_materials'
+	export intermediate_materials="$se_out_tmp"/_intermediate/materials/"$currentInput_name"
+	
+	mkdir -p "$intermediate_materials"
+	mkdir -p "$se_out"/_intermediate/materials/"$currentInput_name"
+	
+	local anticipated_attribsFile
+	anticipated_attribsFile=$(_getAbsoluteFolder "$currentInput")
+	anticipated_attribsFile="$anticipated_attribsFile"/attribs
+	
+	#_messagePlain_probe_cmd_quoteAdd
+	if [[ -e "$anticipated_attribsFile" ]]
+	then
+		_messagePlain_probe_cmd pcb -x bom --attrs "$anticipated_attribsFile" --bomfile "$intermediate_materials"/"$currentInput_name".bom "$currentInput"
+		_messagePlain_probe_cmd pcb -x bom --attrs "$anticipated_attribsFile" --xy-unit mm --xyfile "$intermediate_materials"/"$currentInput_name"-mm.xy "$currentInput"
+		_messagePlain_probe_cmd pcb -x bom --attrs "$anticipated_attribsFile" --xy-unit mil --xyfile "$intermediate_materials"/"$currentInput_name"-mil.xy "$currentInput"
+	fi
+	if ! [[ -e "$anticipated_attribsFile" ]]
+	then
+		_messagePlain_bad 'fail: BOM generation without attrs file currently not supported!'
+		_stop 1
+	fi
+	
+	cp "$intermediate_materials"/* "$se_out"/_intermediate/materials/"$currentInput_name"/
 	
 }
 
 
+
+
+_geda_compile_intermediate_materials_sch() {
+	_messagePlain_nominal 'Compile: intermediate_materials_sch'
+	export intermediate_materials_sch="$se_out_tmp"/_intermediate/materials_sch/"$currentInput_name"
+	
+	mkdir -p "$intermediate_materials_sch"
+	mkdir -p "$se_out"/_intermediate/materials_sch/"$currentInput_name"
+	
+	#pcb -x gerber --all-layers_sch --name-style fixed --gerberfile ./_build/30MHzLowPass ./30MHzLowPass.pcb
+	#pcb -x gerber --all-layers_sch --name-style fixed --gerberfile "$intermediate_materials_sch"/"$currentInput_name" "$currentInput"
+	
+	_messagePlain_probe_cmd gnetlist -g bom2 ""$currentInput"" -o "$intermediate_materials_sch"/machineBOM-complete.txt
+	
+	tail -n +2 "$intermediate_materials_sch"/machineBOM-complete.txt > "$intermediate_materials_sch"/machineBOM-pure.txt
+	
+	
+	
+	_geda_compile_materials_sch
+	
+	
+	
+	cp "$intermediate_materials_sch"/* "$se_out"/_intermediate/materials_sch/"$currentInput_name"/
+	
+}
+
+
+
+
  
 
+_geda_compile_materials_sch() {
+	export currentOutDir="$se_out_tmp"/"$currentInput_name"
+	
+	mkdir -p "$currentOutDir"
+	
+	#"$intermediate_materials_sch"/machineBOM-complete.txt
+	#"$intermediate_materials_sch"/machineBOM-pure.txt
+	
+}
 
 
+
+_geda_compile__in_copy() {
+	_instance_internal "$se_sketchDir"/. "$se_in_tmp"/
+}
+
+
+# WARNING: No production use.
+# DANGER: Breaks building from a copy with automatic modifications.
 _geda_compile___file_pcb() {
-	_messagePlain_nominal 'Compile: extract_layers'
+	_messagePlain_nominal 'Compile: pcb'
 	_messagePlain_good 'found: '"$1"
 	
 	local currentInput
@@ -16721,12 +16793,38 @@ _geda_compile___file_pcb() {
 	
 	
 	_geda_compile_intermediate_layers "$@"
+	_geda_compile_intermediate_materials "$@"
+	
+}
+
+# WARNING: No production use.
+# DANGER: Breaks building from a copy with automatic modifications.
+_geda_compile___file_sch() {
+	_messagePlain_nominal 'Compile: sch'
+	_messagePlain_good 'found: '"$1"
+	
+	local currentInput
+	currentInput=$(_getAbsoluteLocation "$1")
+	
+	local currentInput_base
+	currentInput_base=$(basename "$currentInput")
+	
+	local currentInput_name
+	currentInput_name="${currentInput_base%.*}"
+	
+	_messagePlain_probe_var currentInput_name
+	
+	
+	
+	
+	#_geda_compile_intermediate_layers "$@"
+	_geda_compile_intermediate_materials_sch "$@"
 	
 }
 
 
 # First parameter must be '*.pcb' or directory .
-_geda_compile__build_procedure() {
+_geda_compile__build_pcb_procedure() {
 	# WARNING: May be imperfect.
 	# Ignore directory parameter (already validated).
 	[[ "$1" != "" ]] && [[ -d "$1" ]] && shift
@@ -16736,31 +16834,64 @@ _geda_compile__build_procedure() {
 	if [[ "$1" != "" ]] && [[ "$1" == *".pcb" ]] && [[ -e "$1" ]]
 	then
 		# Single file requested.
-		_geda_compile___file_pcb "$@"
-		return 0
+		#_geda_compile___file_pcb "$@"
+		#return 0
+		
+		# WARNING: Support for individual files DISABLED to support building from a copy with automatic modifications.
+		#Best practice is to manually identify and separately save specialized output as required.
+		_messagePlain_bad 'fail: invalid parameter input: single file not supported'
+		return 1
 	elif [[ "$1" != "" ]]
 	then
 		_messagePlain_bad 'fail: invalid parameter input' && return 1
 	fi
 	
-	find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' -exec "$scriptAbsoluteLocation" _geda_compile___file_pcb {} "$@" \;
+	#find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' -exec "$scriptAbsoluteLocation" _geda_compile___file_pcb {} "$@" \;
+	find "$se_in_tmp" -maxdepth 1 -type f -name '*.pcb' -exec "$scriptAbsoluteLocation" _geda_compile___file_pcb {} "$@" \;
 }
 
+# First parameter must be '*.sch' or directory .
+_geda_compile__build_sch_procedure() {
+	# WARNING: May be imperfect.
+	# Ignore directory parameter (already validated).
+	[[ "$1" != "" ]] && [[ -d "$1" ]] && shift
+	[[ "$1" != "" ]] && [[ "$1" != *".sch" ]] && _messagePlain_bad 'fail: invalid parameter input' && return 1
+	
+	
+	if [[ "$1" != "" ]] && [[ "$1" == *".sch" ]] && [[ -e "$1" ]]
+	then
+		# Single file requested.
+		#_geda_compile___file_sch "$@"
+		#return 0
+		
+		# WARNING: Support for individual files DISABLED to support building from a copy with automatic modifications.
+		#Best practice is to manually identify and separately save specialized output 
+		_messagePlain_bad 'fail: invalid parameter input: single file not supported'
+		return 1
+	elif [[ "$1" != "" ]]
+	then
+		_messagePlain_bad 'fail: invalid parameter input' && return 1
+	fi
+	
+	#find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' -exec "$scriptAbsoluteLocation" _geda_compile___file_sch {} "$@" \;
+	find "$se_in_tmp" -maxdepth 1 -type f -name '*.sch' -exec "$scriptAbsoluteLocation" _geda_compile___file_sch {} "$@" \;
+}
 
 
 _geda_compile__preferences_procedure() {
 	# Example ONLY.
 	#_set_geda_fakeHome
 	#_messagePlain_nominal '_geda...: compile: set: build path'
-	#_geda_method_special --save-prefs --pref build.path="$shortTmp"/_build
+	#_geda_method_special --save-prefs --pref build.path="$safeTmp"/_build
 	
 	# Example ONLY.
 	# ATTENTION: WARNING: Full operation combination. Undefined behavior may occur.
-	#_set_arduino_fakeHome
+	#_set_geda_fakeHome
 	#_messagePlain_nominal '_geda...: compile: combine: full'
-	#_geda_method_special --save-prefs --pref build.path="$shortTmp"/_build "$@"
+	#_geda_method_special --save-prefs --pref build.path="$safeTmp"/_build "$@"
 	
-	_geda_compile__build_procedure "$@"
+	_geda_compile__build_pcb_procedure "$@"
+	_geda_compile__build_sch_procedure "$@"
 }
 
 
@@ -16774,18 +16905,21 @@ _geda_compile__procedure() {
 	#Current directory is generally irrelevant to typical compile, and if different from sketchDir, may cause problems.
 	cd "$se_sketchDir"
 	
-	export se_out_tmp="$shortTmp"/_build
+	export se_out_tmp="$safeTmp"/_build
 	mkdir -p "$se_out_tmp"
 	mkdir -p "$se_out"
 	
 	
+	export se_in_tmp="$safeTmp"/_in
+	mkdir -p "$se_in_tmp"
+	_geda_compile__in_copy
 	
 	_geda_compile__preferences_procedure "$@"
 	
 	
 	
 	
-	#cp "$shortTmp"/_build/*.bin "$se_out"/
+	#cp "$safeTmp"/_build/*.bin "$se_out"/
 	
 	
 	cd "$localFunctionEntryPWD"
@@ -16808,8 +16942,8 @@ _geda_compile__sequence() {
 	#_geda_compile__preferences_procedure
 	
 	_set_geda_fakeHome
-	#_set_geda_userShortHome
-	#_set_geda_editShortHome
+	#_set_geda_userFakeHome
+	#_set_geda_editFakeHome
 	
 	#_gschem_method "$@"
 	#_gschem_executable "$@"
@@ -16826,11 +16960,11 @@ _geda_compile() {
 	"$scriptAbsoluteLocation" _geda_compile__sequence "$@"
 }
 
-_gEDA_designer_out_geometery() {
+_gEDA_designer_out_geometry() {
 	_geda_compile "$@"
 }
-_gEDA_designer_geometery() {
-	_gEDA_designer_out_geometery "$@"
+_gEDA_designer_geometry() {
+	_gEDA_designer_out_geometry "$@"
 }
 
 
@@ -16879,6 +17013,7 @@ _reset_geda_sketchDir() {
 
 _validate_geda_sketchDir_buildOut() {
 	find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' | _condition_lines_zero && return 1
+	find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero && return 1
 	
 	return 0
 }
@@ -16890,21 +17025,19 @@ _validate_geda_sketchDir() {
 	! [[ -e "$se_sketchDir" ]] && return 1
 	! [[ -d "$se_sketchDir" ]] && return 1
 	
-	# WARNING: Without '*.pcb' files (layout), it will not be possible to build any standard geometery files!
-	if ! _validate_geda_sketchDir_buildOut
+	# WARNING: Without '*.sch' files (layout), bill of materials cannot be generated. Usually these are required as standard geometry files!
+	# WARNING: Without '*.pcb' files (layout), it will not be possible to build standard geometry files!
+	_validate_geda_sketchDir_buildOut && return 0
+	_messagePlain_bad 'missing: build: layout'
+	
+	# WARNING: Without even a schematic, there is nothing for the designer to work on.
+	#if find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' | _condition_lines_zero && find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero
+	if find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero
 	then
-		_messagePlain_bad 'missing: build: layout'
-		
-		# WARNING: Without even a schematic, there is nothing for the designer to work on. Begin with a template.
-		#if find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' | _condition_lines_zero && find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero
-		if find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero
-		then
-			_messagePlain_bad 'fail: missing: schematic'
-			return 1
-		fi
-		
-		#return 1
+		_messagePlain_bad 'fail: missing: schematic'
+		return 1
 	fi
+	
 	
 	return 0
 }
@@ -17196,12 +17329,12 @@ _scope_geda_gschem_procedure() {
 	#_geda_compile_preferences_procedure
 	
 	_set_geda_fakeHome
-	#_set_geda_userShortHome
-	#_set_geda_editShortHome
+	#_set_geda_userFakeHome
+	#_set_geda_editFakeHome
 	
 	_gschem_method "$@"
 	
-	_set_geda_userShortHome
+	_set_geda_userFakeHome
 	_gschem_deconfigure_method
 }
 
@@ -18684,6 +18817,7 @@ _compile_bash_program_prog() {
 	includeScriptList+=( core__geda___build_compile__intermediate.sh )
 	
 	includeScriptList+=( core__geda___build_compile_cad.sh )
+	includeScriptList+=( core__geda___build_compile_materials.sh )
 	
 	includeScriptList+=( core__geda___build_compile.sh )
 	

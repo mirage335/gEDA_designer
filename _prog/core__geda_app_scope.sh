@@ -18,12 +18,12 @@ _scope_geda_gschem_procedure() {
 	#_geda_compile_preferences_procedure
 	
 	_set_geda_fakeHome
-	#_set_geda_userShortHome
-	#_set_geda_editShortHome
+	#_set_geda_userFakeHome
+	#_set_geda_editFakeHome
 	
 	_gschem_method "$@"
 	
-	_set_geda_userShortHome
+	_set_geda_userFakeHome
 	_gschem_deconfigure_method
 }
 

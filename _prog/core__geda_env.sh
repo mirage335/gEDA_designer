@@ -43,6 +43,7 @@ _reset_geda_sketchDir() {
 
 _validate_geda_sketchDir_buildOut() {
 	find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' | _condition_lines_zero && return 1
+	find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero && return 1
 	
 	return 0
 }
@@ -54,21 +55,19 @@ _validate_geda_sketchDir() {
 	! [[ -e "$se_sketchDir" ]] && return 1
 	! [[ -d "$se_sketchDir" ]] && return 1
 	
-	# WARNING: Without '*.pcb' files (layout), it will not be possible to build any standard geometery files!
-	if ! _validate_geda_sketchDir_buildOut
+	# WARNING: Without '*.sch' files (layout), bill of materials cannot be generated. Usually these are required as standard geometry files!
+	# WARNING: Without '*.pcb' files (layout), it will not be possible to build standard geometry files!
+	_validate_geda_sketchDir_buildOut && return 0
+	_messagePlain_bad 'missing: build: layout'
+	
+	# WARNING: Without even a schematic, there is nothing for the designer to work on.
+	#if find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' | _condition_lines_zero && find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero
+	if find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero
 	then
-		_messagePlain_bad 'missing: build: layout'
-		
-		# WARNING: Without even a schematic, there is nothing for the designer to work on. Begin with a template.
-		#if find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' | _condition_lines_zero && find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero
-		if find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero
-		then
-			_messagePlain_bad 'fail: missing: schematic'
-			return 1
-		fi
-		
-		#return 1
+		_messagePlain_bad 'fail: missing: schematic'
+		return 1
 	fi
+	
 	
 	return 0
 }
