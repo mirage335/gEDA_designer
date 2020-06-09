@@ -6,9 +6,11 @@ Designer scripts using and supplementing gEDA , and similar. Design typical asse
 
 # Usage
 
+"_gEDA_designer_geometry"
 
 # Design
 
+Beware a modified copy of any input project will be used. Existing files, such as "attribs", may be ignored.
 
 # Dependencies
 

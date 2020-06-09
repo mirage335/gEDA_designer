@@ -4183,11 +4183,6 @@ _compile_bash_program_prog() {
 	
 	includeScriptList+=( core__geda___build_compile__intermediate.sh )
 	
-	includeScriptList+=( core__geda___build_compile_cad.sh )
-	includeScriptList+=( core__geda___build_compile_materials.sh )
-	
-	includeScriptList+=( core__geda___build_compile.sh )
-	
 	
 	includeScriptList+=( core__geda_env.sh )
 	includeScriptList+=( core__geda_bin_.sh )
@@ -4199,8 +4194,21 @@ _compile_bash_program_prog() {
 	includeScriptList+=( core__geda_app_scope.sh )
 	
 	
+	includeScriptList+=( core__geda____manufacturer__pcbway.sh )
+	#includeScriptList+=( core__geda____manufacturer_default.sh )
+	
+	
 	includeScriptList+=( core__geda__build_ops.sh )
 	includeScriptList+=( core__geda__build_ops_default.sh )
+	
+	
+	includeScriptList+=( core__geda___build_compile_cad.sh )
+	includeScriptList+=( core__geda___build_compile_materials.sh )
+	
+	includeScriptList+=( core__geda___build_compile.sh )
+	
+	
+	includeScriptList+=( core__geda____manufacturer_default.sh )
 	
 	
 	#includeScriptList+=( core.sh )
