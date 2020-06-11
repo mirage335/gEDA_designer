@@ -134,8 +134,11 @@ _set_geda_var() {
 
 
 
-
-
+# WARNING: May override user's project settings.
+# WARNING: NECESSARY to ensure such things as complete list of attributes in correct order to satisfy manufacturer BOM requirements.
+_prepare_geda_in_overlay() {
+	_instance_internal "$scriptLib"/_in_overlay/. "$se_in_tmp"/
+}
 
 
 

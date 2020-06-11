@@ -1,3 +1,33 @@
+_geda_compile_materials() {
+	true
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 _geda_compile_materials_sch() {
 	export currentOutDir="$se_out_tmp"/"$currentInput_name"
 	

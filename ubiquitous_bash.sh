@@ -16586,6 +16586,8 @@ _test_prog() {
 	_getDep gsch2pcb
 	_getDep pcb
 	
+	_getDep gnetlist
+	
 	return 0
 }
 
@@ -16681,8 +16683,169 @@ _main() {
 }
 
 
+
+
+_geda_compile_XY_line_comprehensive() {
+	#echo '#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side' > "$intermediate_materials_sch"/"$currentInput_name"-mil.xy
+	echo "$refdes,$footprint,$value,$description,$cost,$device,$mfr,$mfrpn,$dst,$dstpn,$link,$link_page,$supplier,$sbapn,$kitting,$kitting_d,$Xpos,$Ypos,$rot,$side"
+}
+
+
+#"$1" == xyfile (comprehensive, exported by 'pcb')
+#"$2" == bom (comprehensive, exported by 'gnetlist')
+#"$3" == out
+#shift
+#shift
+#shift
+#"$@" == line write echo (function)
+# EXAMPLE
+#echo '#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side' > ./test.out
+#_geda_compile_XY ./test-mil.xy ./test-sch.bom ./test.out _geda_compile_XY_line_comprehensive
+_geda_compile_XY() {
+	[[ "$1" == "" ]] && return 1
+	[[ "$2" == "" ]] && return 1
+	[[ "$3" == "" ]] && return 1
+	
+	local currentFile_xy
+	currentFile_xy="$1"
+	
+	local currentFile_bom
+	currentFile_bom="$2"
+	
+	local currentFile_out
+	currentFile_out="$3"
+	
+	shift
+	shift
+	shift
+	
+	local currentLine_xy
+	local currentLine_bom
+	
+	
+	! [[ -e "$currentFile_xy" ]] && return 1
+	! [[ -e "$currentFile_bom" ]] && return 1
+	
+	while read currentLine_xy
+	do
+		if ! echo "$currentLine_xy" | grep '^[^#\;]' > /dev/null && [[ "$currentLine_xy" != "" ]]
+		then
+			continue
+		fi
+		
+		refdes=$(echo "$currentLine_xy" | cut -d ',' -f1)
+		footprint=$(echo "$currentLine_xy" | cut -d ',' -f2)
+		value=$(echo "$currentLine_xy" | cut -d ',' -f3)
+		Xpos=$(echo "$currentLine_xy" | cut -d ',' -f4)
+		Ypos=$(echo "$currentLine_xy" | cut -d ',' -f5)
+		rot=$(echo "$currentLine_xy" | cut -d ',' -f6)
+		side=$(echo "$currentLine_xy" | cut -d ',' -f7)
+		
+		while read currentLine_bom
+		do
+			
+			if ! echo "$currentLine_bom" | cut -f1 | grep "$refdes" > /dev/null
+			then
+				continue
+			fi
+			
+			description=$(echo "$currentLine_bom" | cut -f4)
+			
+			cost=$(echo "$currentLine_bom" | cut -f5)
+			
+			device=$(echo "$currentLine_bom" | cut -f6)
+			mfr=$(echo "$currentLine_bom" | cut -f7)
+			mfrpn=$(echo "$currentLine_bom" | cut -f8)
+			dst=$(echo "$currentLine_bom" | cut -f9)
+			dstpn=$(echo "$currentLine_bom" | cut -f10)
+			link=$(echo "$currentLine_bom" | cut -f11)
+			link_page=$(echo "$currentLine_bom" | cut -f12)
+			
+			supplier=$(echo "$currentLine_bom" | cut -f13)
+			sbapn=$(echo "$currentLine_bom" | cut -f14)
+			kitting=$(echo "$currentLine_bom" | cut -f15)
+			kitting_d=$(echo "$currentLine_bom" | cut -f16)
+			
+			nobom=$(echo "$currentLine_bom" | cut -f17)
+			noplace=$(echo "$currentLine_bom" | cut -f18)
+			
+			
+		done < "$currentFile_bom"
+		
+		if [[ $noplace != "true" ]]
+		then
+			"$@" >> "$currentFile_out"
+		fi
+		
+		unset refdes footprint value description cost device mfr mfrpn dst dstpn link link_page supplier sbapn kitting kitting_d Xpos Ypos rot side
+		
+		
+	done < "$currentFile_xy"
+	
+	sed -i 's/,unknown/,/g' "$currentFile_out"
+	
+	
+	[[ ! -e "$currentFile_out" ]] && return 1
+	return 0
+}
+
+
+
+_geda_compile_intermediate_materials_sch_comprehensive() {
+	_check_geda_intermediate_all
+	
+	
+	echo '#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side' > "$intermediate_materials_sch"/"$currentInput_name"-mil.xy
+	_geda_compile_XY "$intermediate_materials"/"$currentInput_name"-mil.xy "$intermediate_materials_sch"/"$currentInput_name".bom "$intermediate_materials_sch"/"$currentInput_name"-mil.xy _geda_compile_XY_line_comprehensive
+	
+}
+
+
+
+
+
+
+
+_check_geda_intermediate_all() {
+	local anticipated_attribsFile
+	anticipated_attribsFile=$(_findDir "$currentInput")
+	anticipated_attribsFile="$anticipated_attribsFile"/attribs
+	if ! [[ -e "$anticipated_attribsFile" ]]
+	then
+		# Comprehensive attribs file is expected to have been provided by "_in_overlay" regardless of any other attribs file.
+		_messagePlain_bad 'fail: unexpected: missing: attribs file!'
+		_stop 1
+	fi
+	
+	local anticipated_pcbFile
+	anticipated_pcbFile=$(_findDir "$currentInput")
+	anticipated_pcbFile="$anticipated_pcbFile"/"$currentInput_name".pcb
+	if ! [[ -e "$anticipated_pcbFile" ]]
+	then
+		# Without 'pcb' file, relevant intermediate xy and similar files may not have been produced.
+		_messagePlain_bad 'fail: unexpected: missing: pcb file!'
+		_stop 1
+	fi
+	
+	! [[ -e "$intermediate_materials_sch"/machineBOM-pure.txt ]] && _messagePlain_bad 'fail: unexpected: missing: intermediate: sch: machineBOM-pure.txt !' && _stop 1
+	! [[ -e "$intermediate_materials_sch"/"$currentInput_name".bom ]] && _messagePlain_bad 'fail: unexpected: missing: intermediate: sch: BOM !' && _stop 1
+	
+	! [[ -e "$intermediate_materials"/"$currentInput_name".bom ]] && _messagePlain_bad 'fail: unexpected: missing: intermediate: ...bom' && _stop 1
+	! [[ -e "$intermediate_materials"/"$currentInput_name"-mil.xy ]] && _messagePlain_bad 'fail: unexpected: missing: intermediate: ...mil.xy' && _stop 1
+	! [[ -e "$intermediate_materials"/"$currentInput_name"-in.xy ]] && _messagePlain_bad 'fail: unexpected: missing: intermediate: ...in.xy' && _stop 1
+	! [[ -e "$intermediate_materials"/"$currentInput_name"-mm.xy ]] && _messagePlain_bad 'fail: unexpected: missing: intermediate: ...mm.xy' && _stop 1
+	
+	return 0
+}
+
+
+
+
 _geda_compile_intermediate_layers() {
 	_messagePlain_nominal 'Compile: intermediate_layers'
+	#cd "$se_sketchDir"
+	cd "$se_in_tmp"
+	
 	export intermediate_layers="$se_out_tmp"/_intermediate/layers/"$currentInput_name"
 	
 	mkdir -p "$intermediate_layers"
@@ -16697,30 +16860,37 @@ _geda_compile_intermediate_layers() {
 
 _geda_compile_intermediate_materials() {
 	_messagePlain_nominal 'Compile: intermediate_materials'
+	#cd "$se_sketchDir"
+	cd "$se_in_tmp"
+	
 	export intermediate_materials="$se_out_tmp"/_intermediate/materials/"$currentInput_name"
 	
 	mkdir -p "$intermediate_materials"
 	mkdir -p "$se_out"/_intermediate/materials/"$currentInput_name"
 	
 	local anticipated_attribsFile
-	anticipated_attribsFile=$(_getAbsoluteFolder "$currentInput")
+	anticipated_attribsFile=$(_findDir "$currentInput")
 	anticipated_attribsFile="$anticipated_attribsFile"/attribs
 	
-	#_messagePlain_probe_cmd_quoteAdd
-	if [[ -e "$anticipated_attribsFile" ]]
-	then
-		_messagePlain_probe_cmd pcb -x bom --attrs "$anticipated_attribsFile" --bomfile "$intermediate_materials"/"$currentInput_name".bom "$currentInput"
-		_messagePlain_probe_cmd pcb -x bom --attrs "$anticipated_attribsFile" --xy-unit mm --xyfile "$intermediate_materials"/"$currentInput_name"-mm.xy "$currentInput"
-		_messagePlain_probe_cmd pcb -x bom --attrs "$anticipated_attribsFile" --xy-unit mil --xyfile "$intermediate_materials"/"$currentInput_name"-mil.xy "$currentInput"
-	fi
+	
 	if ! [[ -e "$anticipated_attribsFile" ]]
 	then
 		_messagePlain_bad 'fail: BOM generation without attrs file currently not supported!'
 		_stop 1
 	fi
 	
-	cp "$intermediate_materials"/* "$se_out"/_intermediate/materials/"$currentInput_name"/
+	if [[ -e "$anticipated_attribsFile" ]]
+	then
+		#_messagePlain_probe_cmd_quoteAdd
+		_messagePlain_probe_cmd pcb -x bom --attrs "$anticipated_attribsFile" --bomfile "$intermediate_materials"/"$currentInput_name".bom "$currentInput"
+		_messagePlain_probe_cmd pcb -x bom --attrs "$anticipated_attribsFile" --xy-unit mil --xyfile "$intermediate_materials"/"$currentInput_name"-mil.xy "$currentInput"
+		_messagePlain_probe_cmd pcb -x bom --attrs "$anticipated_attribsFile" --xy-unit in --xyfile "$intermediate_materials"/"$currentInput_name"-in.xy "$currentInput"
+		_messagePlain_probe_cmd pcb -x bom --attrs "$anticipated_attribsFile" --xy-unit mm --xyfile "$intermediate_materials"/"$currentInput_name"-mm.xy "$currentInput"
+	fi
 	
+	_geda_compile_materials
+	
+	cp "$intermediate_materials"/* "$se_out"/_intermediate/materials/"$currentInput_name"/
 }
 
 
@@ -16728,26 +16898,37 @@ _geda_compile_intermediate_materials() {
 
 _geda_compile_intermediate_materials_sch() {
 	_messagePlain_nominal 'Compile: intermediate_materials_sch'
+	#cd "$se_sketchDir"
+	cd "$se_in_tmp"
+	
+	export intermediate_materials="$se_out_tmp"/_intermediate/materials/"$currentInput_name"
 	export intermediate_materials_sch="$se_out_tmp"/_intermediate/materials_sch/"$currentInput_name"
 	
 	mkdir -p "$intermediate_materials_sch"
 	mkdir -p "$se_out"/_intermediate/materials_sch/"$currentInput_name"
 	
-	#pcb -x gerber --all-layers_sch --name-style fixed --gerberfile ./_build/30MHzLowPass ./30MHzLowPass.pcb
-	#pcb -x gerber --all-layers_sch --name-style fixed --gerberfile "$intermediate_materials_sch"/"$currentInput_name" "$currentInput"
+	local anticipated_attribsFile
+	anticipated_attribsFile=$(_findDir "$currentInput")
+	anticipated_attribsFile="$anticipated_attribsFile"/attribs
+	if ! [[ -e "$anticipated_attribsFile" ]]
+	then
+		_messagePlain_bad 'fail: BOM generation without attribs file currently not supported!'
+		_stop 1
+	fi
 	
-	_messagePlain_probe_cmd gnetlist -g bom2 ""$currentInput"" -o "$intermediate_materials_sch"/machineBOM-complete.txt
-	
+	_messagePlain_probe_cmd gnetlist -g bom2 "$currentInput" -o "$intermediate_materials_sch"/machineBOM-complete.txt
 	tail -n +2 "$intermediate_materials_sch"/machineBOM-complete.txt > "$intermediate_materials_sch"/machineBOM-pure.txt
 	
+	_messagePlain_probe_cmd gnetlist -g bom "$currentInput" -o "$intermediate_materials_sch"/"$currentInput_name".bom
+	
+	
+	
+	_geda_compile_intermediate_materials_sch_comprehensive
 	
 	
 	_geda_compile_materials_sch
 	
-	
-	
 	cp "$intermediate_materials_sch"/* "$se_out"/_intermediate/materials_sch/"$currentInput_name"/
-	
 }
 
 
@@ -16889,8 +17070,11 @@ _set_geda_var() {
 
 
 
-
-
+# WARNING: May override user's project settings.
+# WARNING: NECESSARY to ensure such things as complete list of attributes in correct order to satisfy manufacturer BOM requirements.
+_prepare_geda_in_overlay() {
+	_instance_internal "$scriptLib"/_in_overlay/. "$se_in_tmp"/
+}
 
 
 
@@ -17136,7 +17320,7 @@ _scope_geda_gschem() {
 
 _declare_geda_manufacturer_pcbway() {
 	_prepare_geda_manufacturer() {
-		_instance_internal "$scriptLib"/manufacturers/pcbway/_in_overlay/. "$se_in_tmp"/
+		_instance_internal "$scriptLib"/_manufacturers/pcbway/_in_overlay/. "$se_in_tmp"/
 	}
 }
 
@@ -17178,6 +17362,36 @@ _ops_geda_sketch() {
 
  
 
+_geda_compile_materials() {
+	true
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 _geda_compile_materials_sch() {
 	export currentOutDir="$se_out_tmp"/"$currentInput_name"
 	
@@ -17195,20 +17409,18 @@ _geda_compile__in_copy() {
 }
 
 
-# WARNING: No production use.
-# DANGER: Breaks building from a copy with automatic modifications.
 _geda_compile___file_pcb() {
 	_messagePlain_nominal 'Compile: pcb'
 	_messagePlain_good 'found: '"$1"
 	
-	local currentInput
-	currentInput=$(_getAbsoluteLocation "$1")
+	cd "$se_sketchDir"
+	#cd "$se_in_tmp"
 	
-	local currentInput_base
-	currentInput_base=$(basename "$currentInput")
+	export currentInput=$(_getAbsoluteLocation "$1")
 	
-	local currentInput_name
-	currentInput_name="${currentInput_base%.*}"
+	export currentInput_base=$(basename "$currentInput")
+	
+	export currentInput_name="${currentInput_base%.*}"
 	
 	_messagePlain_probe_var currentInput_name
 	
@@ -17220,20 +17432,18 @@ _geda_compile___file_pcb() {
 	
 }
 
-# WARNING: No production use.
-# DANGER: Breaks building from a copy with automatic modifications.
 _geda_compile___file_sch() {
 	_messagePlain_nominal 'Compile: sch'
 	_messagePlain_good 'found: '"$1"
 	
-	local currentInput
-	currentInput=$(_getAbsoluteLocation "$1")
+	cd "$se_sketchDir"
+	#cd "$se_in_tmp"
 	
-	local currentInput_base
-	currentInput_base=$(basename "$currentInput")
+	export currentInput=$(_getAbsoluteLocation "$1")
 	
-	local currentInput_name
-	currentInput_name="${currentInput_base%.*}"
+	export currentInput_base=$(basename "$currentInput")
+	
+	export currentInput_name="${currentInput_base%.*}"
 	
 	_messagePlain_probe_var currentInput_name
 	
@@ -17248,6 +17458,9 @@ _geda_compile___file_sch() {
 
 # First parameter must be '*.pcb' or directory .
 _geda_compile__build_pcb_procedure() {
+	#cd "$se_sketchDir"
+	cd "$se_in_tmp"
+	
 	# WARNING: May be imperfect.
 	# Ignore directory parameter (already validated).
 	[[ "$1" != "" ]] && [[ -d "$1" ]] && shift
@@ -17257,6 +17470,8 @@ _geda_compile__build_pcb_procedure() {
 	if [[ "$1" != "" ]] && [[ "$1" == *".pcb" ]] && [[ -e "$1" ]]
 	then
 		# Single file requested.
+		# WARNING: No production use.
+		# DANGER: Breaks building from a copy with automatic modifications.
 		#_geda_compile___file_pcb "$@"
 		#return 0
 		
@@ -17275,6 +17490,9 @@ _geda_compile__build_pcb_procedure() {
 
 # First parameter must be '*.sch' or directory .
 _geda_compile__build_sch_procedure() {
+	#cd "$se_sketchDir"
+	cd "$se_in_tmp"
+	
 	# WARNING: May be imperfect.
 	# Ignore directory parameter (already validated).
 	[[ "$1" != "" ]] && [[ -d "$1" ]] && shift
@@ -17284,6 +17502,9 @@ _geda_compile__build_sch_procedure() {
 	if [[ "$1" != "" ]] && [[ "$1" == *".sch" ]] && [[ -e "$1" ]]
 	then
 		# Single file requested.
+		# WARNING: No production use.
+		# DANGER: Breaks building from a copy with automatic modifications.
+		# DANGER: Breaks build of comprehensive BOM/XY files, due to lack of prior 'pcb' file processing!
 		#_geda_compile___file_sch "$@"
 		#return 0
 		
@@ -17302,6 +17523,9 @@ _geda_compile__build_sch_procedure() {
 
 
 _geda_compile__preferences_procedure() {
+	#cd "$se_sketchDir"
+	cd "$se_in_tmp"
+	
 	# Example ONLY.
 	#_set_geda_fakeHome
 	#_messagePlain_nominal '_geda...: compile: set: build path'
@@ -17313,6 +17537,8 @@ _geda_compile__preferences_procedure() {
 	#_messagePlain_nominal '_geda...: compile: combine: full'
 	#_geda_method_special --save-prefs --pref build.path="$safeTmp"/_build "$@"
 	
+	
+	# DANGER: Comprehensive BOM/XY files require both 'sch' and 'pcb' files to have been present and processed!
 	_geda_compile__build_pcb_procedure "$@"
 	_geda_compile__build_sch_procedure "$@"
 }
@@ -17325,7 +17551,7 @@ _geda_compile__procedure() {
 	
 	_messagePlain_nominal 'Compile.'
 	
-	#Current directory is generally irrelevant to typical compile, and if different from sketchDir, may cause problems.
+	#Current directory is generally irrelevant to typical compile, and if different from 'sketchDir', may cause problems.
 	cd "$se_sketchDir"
 	
 	export se_out_tmp="$safeTmp"/_build
@@ -17336,7 +17562,12 @@ _geda_compile__procedure() {
 	export se_in_tmp="$safeTmp"/_in
 	mkdir -p "$se_in_tmp"
 	_geda_compile__in_copy
+	_prepare_geda_in_overlay
 	_prepare_geda_manufacturer
+	
+	
+	#Current directory is generally irrelevant to typical compile, and if different from 'in' directory, may cause problems.
+	cd "$se_in_tmp"
 	
 	_geda_compile__preferences_procedure "$@"
 	
@@ -17393,14 +17624,17 @@ _gEDA_designer_geometry() {
 
 
 
-_declare_geda_manufacturer_pcbway() {
+
+# ATTENTION: Mostly serves as example and placeholder. Multiple manufacturer's specifications are normally generated simultaneously for any supportable layout from extremely comprehensive geometry files.
+_declare_geda_manufacturer_generic() {
 	_prepare_geda_manufacturer() {
-		_instance_internal "$scriptLib"/manufacturers/pcbway/_in_overlay/. "$se_in_tmp"/
+		true
+		#_instance_internal "$scriptLib"/_manufacturers/generic/_in_overlay/. "$se_in_tmp"/
 	}
 }
 
 
-_declare_geda_manufacturer_pcbway
+_declare_geda_manufacturer_generic
 
 
 _declare_scope_geda
@@ -18834,7 +19068,7 @@ _compile_bash_installation_prog() {
 _compile_bash_program_prog() {	
 	export includeScriptList
 	
-	
+	includeScriptList+=( core__geda___build_compile__intermediate_comprehensive.sh )
 	includeScriptList+=( core__geda___build_compile__intermediate.sh )
 	
 	

@@ -5,20 +5,18 @@ _geda_compile__in_copy() {
 }
 
 
-# WARNING: No production use.
-# DANGER: Breaks building from a copy with automatic modifications.
 _geda_compile___file_pcb() {
 	_messagePlain_nominal 'Compile: pcb'
 	_messagePlain_good 'found: '"$1"
 	
-	local currentInput
-	currentInput=$(_getAbsoluteLocation "$1")
+	cd "$se_sketchDir"
+	#cd "$se_in_tmp"
 	
-	local currentInput_base
-	currentInput_base=$(basename "$currentInput")
+	export currentInput=$(_getAbsoluteLocation "$1")
 	
-	local currentInput_name
-	currentInput_name="${currentInput_base%.*}"
+	export currentInput_base=$(basename "$currentInput")
+	
+	export currentInput_name="${currentInput_base%.*}"
 	
 	_messagePlain_probe_var currentInput_name
 	
@@ -30,20 +28,18 @@ _geda_compile___file_pcb() {
 	
 }
 
-# WARNING: No production use.
-# DANGER: Breaks building from a copy with automatic modifications.
 _geda_compile___file_sch() {
 	_messagePlain_nominal 'Compile: sch'
 	_messagePlain_good 'found: '"$1"
 	
-	local currentInput
-	currentInput=$(_getAbsoluteLocation "$1")
+	cd "$se_sketchDir"
+	#cd "$se_in_tmp"
 	
-	local currentInput_base
-	currentInput_base=$(basename "$currentInput")
+	export currentInput=$(_getAbsoluteLocation "$1")
 	
-	local currentInput_name
-	currentInput_name="${currentInput_base%.*}"
+	export currentInput_base=$(basename "$currentInput")
+	
+	export currentInput_name="${currentInput_base%.*}"
 	
 	_messagePlain_probe_var currentInput_name
 	
@@ -58,6 +54,9 @@ _geda_compile___file_sch() {
 
 # First parameter must be '*.pcb' or directory .
 _geda_compile__build_pcb_procedure() {
+	#cd "$se_sketchDir"
+	cd "$se_in_tmp"
+	
 	# WARNING: May be imperfect.
 	# Ignore directory parameter (already validated).
 	[[ "$1" != "" ]] && [[ -d "$1" ]] && shift
@@ -67,6 +66,8 @@ _geda_compile__build_pcb_procedure() {
 	if [[ "$1" != "" ]] && [[ "$1" == *".pcb" ]] && [[ -e "$1" ]]
 	then
 		# Single file requested.
+		# WARNING: No production use.
+		# DANGER: Breaks building from a copy with automatic modifications.
 		#_geda_compile___file_pcb "$@"
 		#return 0
 		
@@ -85,6 +86,9 @@ _geda_compile__build_pcb_procedure() {
 
 # First parameter must be '*.sch' or directory .
 _geda_compile__build_sch_procedure() {
+	#cd "$se_sketchDir"
+	cd "$se_in_tmp"
+	
 	# WARNING: May be imperfect.
 	# Ignore directory parameter (already validated).
 	[[ "$1" != "" ]] && [[ -d "$1" ]] && shift
@@ -94,6 +98,9 @@ _geda_compile__build_sch_procedure() {
 	if [[ "$1" != "" ]] && [[ "$1" == *".sch" ]] && [[ -e "$1" ]]
 	then
 		# Single file requested.
+		# WARNING: No production use.
+		# DANGER: Breaks building from a copy with automatic modifications.
+		# DANGER: Breaks build of comprehensive BOM/XY files, due to lack of prior 'pcb' file processing!
 		#_geda_compile___file_sch "$@"
 		#return 0
 		
@@ -112,6 +119,9 @@ _geda_compile__build_sch_procedure() {
 
 
 _geda_compile__preferences_procedure() {
+	#cd "$se_sketchDir"
+	cd "$se_in_tmp"
+	
 	# Example ONLY.
 	#_set_geda_fakeHome
 	#_messagePlain_nominal '_geda...: compile: set: build path'
@@ -123,6 +133,8 @@ _geda_compile__preferences_procedure() {
 	#_messagePlain_nominal '_geda...: compile: combine: full'
 	#_geda_method_special --save-prefs --pref build.path="$safeTmp"/_build "$@"
 	
+	
+	# DANGER: Comprehensive BOM/XY files require both 'sch' and 'pcb' files to have been present and processed!
 	_geda_compile__build_pcb_procedure "$@"
 	_geda_compile__build_sch_procedure "$@"
 }
@@ -135,7 +147,7 @@ _geda_compile__procedure() {
 	
 	_messagePlain_nominal 'Compile.'
 	
-	#Current directory is generally irrelevant to typical compile, and if different from sketchDir, may cause problems.
+	#Current directory is generally irrelevant to typical compile, and if different from 'sketchDir', may cause problems.
 	cd "$se_sketchDir"
 	
 	export se_out_tmp="$safeTmp"/_build
@@ -146,7 +158,12 @@ _geda_compile__procedure() {
 	export se_in_tmp="$safeTmp"/_in
 	mkdir -p "$se_in_tmp"
 	_geda_compile__in_copy
+	_prepare_geda_in_overlay
 	_prepare_geda_manufacturer
+	
+	
+	#Current directory is generally irrelevant to typical compile, and if different from 'in' directory, may cause problems.
+	cd "$se_in_tmp"
 	
 	_geda_compile__preferences_procedure "$@"
 	
