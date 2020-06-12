@@ -1,6 +1,12 @@
 ##### Core
 
-
+_imagemagick_limit_command() {
+	local currentCommand
+	currentCommand="$1"
+	shift
+	
+	"$currentCommand" -limit width 64KP -limit height 64KP -limit list-length 16EP -limit area 6GP -limit memory 2GiB -limit map 3GiB -limit disk 96GiB -limit file 768 -limit thread 2 -limit throttle 0 -limit time 2764800 "$@"
+}
 
 
 

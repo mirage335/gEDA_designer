@@ -1356,6 +1356,11 @@ _priority_enumerate_pattern() {
 	rm "$parentListFile"
 }
 
+# DANGER: Best practice is to call as with trailing slashes and source trailing dot .
+# _instance_internal /root/source/. /root/destination/
+# _instance_internal "$1"/. "$actualFakeHome"/"$2"/
+# DANGER: Do not silence output unless specifically required (eg. links, possibly to directories, intended not to overwrite copies).
+# _instance_internal "$globalFakeHome"/. "$actualFakeHome"/ > /dev/null 2>&1
 _instance_internal() {
 	! [[ -e "$1" ]] && return 1
 	! [[ -d "$1" ]] && return 1
@@ -2507,16 +2512,16 @@ _typeDep() {
 	# WARNING: Allows specification of entire path from root. *Strongly* prefer use of subpath matching, for increased portability.
 	[[ "$1" == '/'* ]] && [[ -e "$1" ]] && return 0
 	
-	[[ -e /lib/"$1" ]] && return 0
-	[[ -e /lib/x86_64-linux-gnu/"$1" ]] && return 0
-	[[ -e /lib64/"$1" ]] && return 0
-	[[ -e /lib64/x86_64-linux-gnu/"$1" ]] && return 0
-	[[ -e /usr/lib/"$1" ]] && return 0
-	[[ -e /usr/lib/x86_64-linux-gnu/"$1" ]] && return 0
-	[[ -e /usr/local/lib/"$1" ]] && return 0
-	[[ -e /usr/local/lib/x86_64-linux-gnu/"$1" ]] && return 0
-	[[ -e /usr/include/"$1" ]] && return 0
-	[[ -e /usr/local/include/"$1" ]] && return 0
+	[[ -e /lib/"$1" ]] && ! [[ -d /lib/"$1" ]] && return 0
+	[[ -e /lib/x86_64-linux-gnu/"$1" ]] && ! [[ -d /lib/x86_64-linux-gnu/"$1" ]] && return 0
+	[[ -e /lib64/"$1" ]] && ! [[ -d /lib64/"$1" ]] && return 0
+	[[ -e /lib64/x86_64-linux-gnu/"$1" ]] && ! [[ -d /lib64/x86_64-linux-gnu/"$1" ]] && return 0
+	[[ -e /usr/lib/"$1" ]] && ! [[ -d /usr/lib/"$1" ]] && return 0
+	[[ -e /usr/lib/x86_64-linux-gnu/"$1" ]] && ! [[ -d /usr/lib/x86_64-linux-gnu/"$1" ]] && return 0
+	[[ -e /usr/local/lib/"$1" ]] && ! [[ -d  /usr/local/lib/"$1" ]] && return 0
+	[[ -e /usr/local/lib/x86_64-linux-gnu/"$1" ]] && ! [[ -d /usr/local/lib/x86_64-linux-gnu/"$1" ]] && return 0
+	[[ -e /usr/include/"$1" ]] && ! [[ -d /usr/include/"$1" ]] && return 0
+	[[ -e /usr/local/include/"$1" ]] && ! [[ -d /usr/local/include/"$1" ]] && return 0
 	
 	if ! type "$1" >/dev/null 2>&1
 	then
@@ -3693,7 +3698,8 @@ _compile_bash_shortcuts() {
 	
 	includeScriptList+=( "shortcuts/prompt"/visualPrompt.sh )
 	
-	[[ "$enUb_dev_heavy" == "true" ]] && includeScriptList+=( "shortcuts/dev"/devsearch.sh )
+	#[[ "$enUb_dev_heavy" == "true" ]] && 
+	includeScriptList+=( "shortcuts/dev"/devsearch.sh )
 	
 	[[ "$enUb_fakehome" == "true" ]] && [[ "$enUb_dev_heavy" == "true" ]] && includeScriptList+=( "shortcuts/dev/app"/devemacs.sh )
 	[[ "$enUb_fakehome" == "true" ]] && [[ "$enUb_dev_heavy" == "true" ]] && includeScriptList+=( "shortcuts/dev/app"/devatom.sh )
@@ -4203,7 +4209,8 @@ _compile_bash_program_prog() {
 	
 	
 	includeScriptList+=( core__geda___build_compile_cad.sh )
-	includeScriptList+=( core__geda___build_compile_materials.sh )
+	includeScriptList+=( core__geda___build_compile__layers.sh )
+	includeScriptList+=( core__geda___build_compile__materials.sh )
 	
 	includeScriptList+=( core__geda___build_compile.sh )
 	

@@ -47,6 +47,8 @@ _geda_compile_intermediate_layers() {
 	#pcb -x gerber --all-layers --name-style fixed --gerberfile ./_build/30MHzLowPass ./30MHzLowPass.pcb
 	_messagePlain_probe_cmd pcb -x gerber --all-layers --name-style fixed --gerberfile "$intermediate_layers"/"$currentInput_name" "$currentInput"
 	
+	_geda_compile_layers
+	
 	cp "$intermediate_layers"/* "$se_out"/_intermediate/layers/"$currentInput_name"/
 	
 }

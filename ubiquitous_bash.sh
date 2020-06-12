@@ -1356,6 +1356,11 @@ _priority_enumerate_pattern() {
 	rm "$parentListFile"
 }
 
+# DANGER: Best practice is to call as with trailing slashes and source trailing dot .
+# _instance_internal /root/source/. /root/destination/
+# _instance_internal "$1"/. "$actualFakeHome"/"$2"/
+# DANGER: Do not silence output unless specifically required (eg. links, possibly to directories, intended not to overwrite copies).
+# _instance_internal "$globalFakeHome"/. "$actualFakeHome"/ > /dev/null 2>&1
 _instance_internal() {
 	! [[ -e "$1" ]] && return 1
 	! [[ -d "$1" ]] && return 1
@@ -2841,16 +2846,16 @@ _typeDep() {
 	# WARNING: Allows specification of entire path from root. *Strongly* prefer use of subpath matching, for increased portability.
 	[[ "$1" == '/'* ]] && [[ -e "$1" ]] && return 0
 	
-	[[ -e /lib/"$1" ]] && return 0
-	[[ -e /lib/x86_64-linux-gnu/"$1" ]] && return 0
-	[[ -e /lib64/"$1" ]] && return 0
-	[[ -e /lib64/x86_64-linux-gnu/"$1" ]] && return 0
-	[[ -e /usr/lib/"$1" ]] && return 0
-	[[ -e /usr/lib/x86_64-linux-gnu/"$1" ]] && return 0
-	[[ -e /usr/local/lib/"$1" ]] && return 0
-	[[ -e /usr/local/lib/x86_64-linux-gnu/"$1" ]] && return 0
-	[[ -e /usr/include/"$1" ]] && return 0
-	[[ -e /usr/local/include/"$1" ]] && return 0
+	[[ -e /lib/"$1" ]] && ! [[ -d /lib/"$1" ]] && return 0
+	[[ -e /lib/x86_64-linux-gnu/"$1" ]] && ! [[ -d /lib/x86_64-linux-gnu/"$1" ]] && return 0
+	[[ -e /lib64/"$1" ]] && ! [[ -d /lib64/"$1" ]] && return 0
+	[[ -e /lib64/x86_64-linux-gnu/"$1" ]] && ! [[ -d /lib64/x86_64-linux-gnu/"$1" ]] && return 0
+	[[ -e /usr/lib/"$1" ]] && ! [[ -d /usr/lib/"$1" ]] && return 0
+	[[ -e /usr/lib/x86_64-linux-gnu/"$1" ]] && ! [[ -d /usr/lib/x86_64-linux-gnu/"$1" ]] && return 0
+	[[ -e /usr/local/lib/"$1" ]] && ! [[ -d  /usr/local/lib/"$1" ]] && return 0
+	[[ -e /usr/local/lib/x86_64-linux-gnu/"$1" ]] && ! [[ -d /usr/local/lib/x86_64-linux-gnu/"$1" ]] && return 0
+	[[ -e /usr/include/"$1" ]] && ! [[ -d /usr/include/"$1" ]] && return 0
+	[[ -e /usr/local/include/"$1" ]] && ! [[ -d /usr/local/include/"$1" ]] && return 0
 	
 	if ! type "$1" >/dev/null 2>&1
 	then
@@ -7687,12 +7692,12 @@ _closeChRoot_emergency() {
 	fi
 	
 	#Not called by systemd, AND instanced directories still mounted, do not globally halt all. (optional)
-	#[[ "$1" == "" ]] && find "$scriptAbsoluteFolder"/v_* -maxdepth 1 -type d > /dev/null && return 0
+	#[[ "$1" == "" ]] && find "$scriptAbsoluteFolder"/v_* -maxdepth 1 -type d | _condition_lines_zero && return 0
 	
 	#Not called by systemd, do not globally halt all.
 	[[ "$1" == "" ]] && return 0
 	
-	! _readLocked "$lock_open" && ! find "$scriptAbsoluteFolder"/v_*/fs -maxdepth 1 -type d && return 0
+	! _readLocked "$lock_open" && find "$scriptAbsoluteFolder"/v_*/fs -maxdepth 1 -type d | _condition_lines_zero && return 0
 	_readLocked "$lock_closing" && return 1
 	_readLocked "$lock_opening" && return 1
 	
@@ -16581,6 +16586,51 @@ _package() {
 
 
 
+_vector_prog() {
+	true
+}
+
+
+_test_prog_imagemagick_limit_command() {
+	identify -limit width 64KP -limit height 64KP -limit list-length 16EP -limit area 6GP -limit memory 2GiB -limit map 3GiB -limit disk 96GiB -limit file 768 -limit thread 2 -limit throttle 0 -limit time 2764800 "$@"
+}
+
+_test_prog_imagemagick_limit_check() {
+	! _test_prog_imagemagick_limit_command -list resource | grep 'Width: 64KP' > /dev/null 2>&1 && return 1
+	! _test_prog_imagemagick_limit_command -list resource | grep 'Height: 64KP' > /dev/null 2>&1 && return 1
+	
+	! _test_prog_imagemagick_limit_command -list resource | grep 'List length: 16EP' > /dev/null 2>&1 && return 1
+	
+	! _test_prog_imagemagick_limit_command -list resource | grep 'Area: 6GP' > /dev/null 2>&1 && return 1
+	
+	! _test_prog_imagemagick_limit_command -list resource | grep 'Memory: 2GiB' > /dev/null 2>&1 && return 1
+	! _test_prog_imagemagick_limit_command -list resource | grep 'Map: 3GiB' > /dev/null 2>&1 && return 1
+	! _test_prog_imagemagick_limit_command -list resource | grep 'Disk: 96GiB' > /dev/null 2>&1 && return 1
+	! _test_prog_imagemagick_limit_command -list resource | grep 'File: 768' > /dev/null 2>&1 && return 1
+	
+	! _test_prog_imagemagick_limit_command -list resource | grep 'Thread: 2' > /dev/null 2>&1 && return 1
+	
+	! _test_prog_imagemagick_limit_command -list resource | grep 'Throttle: 0' > /dev/null 2>&1 && return 1
+	
+	! _test_prog_imagemagick_limit_command -list resource | grep 'Time: 2764800' > /dev/null 2>&1 && return 1
+	
+	return 0
+}
+
+
+_test_prog_imagemagick_limit() {
+	#ImageMagick 'security' policy very inappropriately protects 'users' from consuming their own resources as needed.
+	#A daemon could have allowed webservers to request limits on their own users, sane defaults could have been used without restriction, or typical web server accounts could have been limited by default.
+	#Debian default in particular can be far too restrictive for processing PCB panel photolithography images at 24in dimension and 1mil/10um resolution .
+	sudo -n find /etc -path '*ImageMagick*' -name 'policy.xml' -exec cp "$scriptLib"/imagemagick_policy/policy.xml '{}' \;
+	
+	! _test_prog_imagemagick_limit_check && _messagePlain_warn 'fail: imagemagick: limits: ignored'
+	
+	
+	return 0
+}
+
+
 _test_prog() {
 	_getDep gschem
 	_getDep gsch2pcb
@@ -16588,11 +16638,43 @@ _test_prog() {
 	
 	_getDep gnetlist
 	
+	_getDep gerbv
+	
+	
+	
+	_getDep inkscape
+	
+	
+	_getDep pstoedit
+	
+	if pstoedit 2>&1 | grep 'version 3.73' > /dev/null 2>&1
+	then
+		_messagePlain_warn 'warn: pstoedit: version: missing or broken 3.73 cannot convert eps to dxf'
+		_messagePlain_request 'request: remove all pstoedit packages and replace with pstoedit version 3.75 from '"'"_lib/optional"'"' '
+	fi
+	
+	
+	
+	_getDep convert
+	_getDep composite
+	
+	
+	_test_prog_imagemagick_limit
+	
+	
+	
+	
+	
+	
+	
+	_vector_prog
+	
 	return 0
 }
 
 _setup_prog() {
 	#true
+	
 	
 	return 0
 }
@@ -16600,7 +16682,13 @@ _setup_prog() {
 
 ##### Core
 
-
+_imagemagick_limit_command() {
+	local currentCommand
+	currentCommand="$1"
+	shift
+	
+	"$currentCommand" -limit width 64KP -limit height 64KP -limit list-length 16EP -limit area 6GP -limit memory 2GiB -limit map 3GiB -limit disk 96GiB -limit file 768 -limit thread 2 -limit throttle 0 -limit time 2764800 "$@"
+}
 
 
 
@@ -16853,6 +16941,8 @@ _geda_compile_intermediate_layers() {
 	
 	#pcb -x gerber --all-layers --name-style fixed --gerberfile ./_build/30MHzLowPass ./30MHzLowPass.pcb
 	_messagePlain_probe_cmd pcb -x gerber --all-layers --name-style fixed --gerberfile "$intermediate_layers"/"$currentInput_name" "$currentInput"
+	
+	_geda_compile_layers
 	
 	cp "$intermediate_layers"/* "$se_out"/_intermediate/layers/"$currentInput_name"/
 	
@@ -17360,10 +17450,103 @@ _ops_geda_sketch() {
 
 
 
- 
+_geda_compile_layers_cad() {
+	_messageNormal "Compile: CAD"
+	
+	#"$intermediate_layers"/"$currentInput_name"
+	
+	local currentDPI
+	#currentDPI="1200"
+	currentDPI="1270"
+	
+	#"$currentSpecific_work_cad"/
+	local currentSpecific_work_cad
+	currentSpecific_work_cad="$safeTmp"/_specific/cad
+	mkdir -p "$currentSpecific_work_cad"
+	
+	
+	
+	gerbv -b \#FFFFFF --export svg --output "$currentSpecific_work_cad"/combined.svg "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".outline.gbr
+	
+	#Inches. Circles will be approximate
+	#inkscape -E "$currentSpecific_work_cad"/combined_direct.dxf "$currentSpecific_work_cad"/combined.svg
+	inkscape -E "$currentSpecific_work_cad"/combined.eps "$currentSpecific_work_cad"/combined.svg
+	pstoedit -dt -f dxf "$currentSpecific_work_cad"/combined.eps "$currentSpecific_work_cad"/combined.dxf
+	
+	
+	
+	gerbv -b \#cccccc --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Top_Copper.png -f \#00000000 -b \#cccccc "$intermediate_layers"/"$currentInput_name".topmask.gbr -f \#ccccccFF "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#B18883FF "$intermediate_layers"/"$currentInput_name".top.gbr -f \#FFFFFFFF "$intermediate_layers"/"$currentInput_name".topsilk.gbr -f \#000000FF "$intermediate_layers"/"$currentInput_name".outline.gbr
+	gerbv -b \#cccccc --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Top_Mask.png -f \#ccccccFF -b \#102c10 "$intermediate_layers"/"$currentInput_name".topmask.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#00000000 "$intermediate_layers"/"$currentInput_name".top.gbr -f \#FFFFFFFF "$intermediate_layers"/"$currentInput_name".topsilk.gbr -f \#ccccccFF "$intermediate_layers"/"$currentInput_name".outline.gbr
+	gerbv -a -b \#FFFFFF --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Top_Outline.png -f \#00000000 "$intermediate_layers"/"$currentInput_name".topmask.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#00000000 "$intermediate_layers"/"$currentInput_name".top.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".topsilk.gbr -f \#000000FF "$intermediate_layers"/"$currentInput_name".outline.gbr
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Copper.png -transparent \#cccccc "$currentSpecific_work_cad"/Top_Copper.png
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Mask.png -transparent \#cccccc "$currentSpecific_work_cad"/Top_Mask.png
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Outline.png -transparent \#cccccc "$currentSpecific_work_cad"/Top_Outline.png
+	
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Outline.png -bordercolor white -border 1x1 -alpha set -channel RGBA -fuzz 10% -fill none -floodfill +0+0 white -shave 1x1 "$currentSpecific_work_cad"/Top_Outline.png
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Outline.png -fuzz 100% -fill \#0a1a0a -opaque white "$currentSpecific_work_cad"/Top_BG.png
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Outline.png -channel a -negate +channel -fill \#cccccc -colorize 100% "$currentSpecific_work_cad"/Top_Outline.png
+	
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Mask.png -channel rgba -matte -fill "rgba(16,44,16,0.8)" -opaque \#102c10 "$currentSpecific_work_cad"/Top_Mask.png
+	
+	_imagemagick_limit_command composite "$currentSpecific_work_cad"/Top_Outline.png "$currentSpecific_work_cad"/Top_Mask.png "$currentSpecific_work_cad"/Top_Mask_Real.png
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Mask_Real.png -transparent \#cccccc "$currentSpecific_work_cad"/Top_Mask_Real.png
+	
+	_imagemagick_limit_command composite "$currentSpecific_work_cad"/Top_Mask_Real.png "$currentSpecific_work_cad"/Top_Copper.png "$currentSpecific_work_cad"/Top_All.png
+	_imagemagick_limit_command composite "$currentSpecific_work_cad"/Top_All.png "$currentSpecific_work_cad"/Top_BG.png "$currentSpecific_work_cad"/Top.png
+	
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top.png -background "#cccccc" -flatten "$currentSpecific_work_cad"/Top.png
+	
+	mv "$currentSpecific_work_cad"/Top.png "$currentSpecific_work_cad"/RenderTop.png
+	#rm "$currentSpecific_work_cad"/Top*.png
+	
+	
+	
+	
+	gerbv -b \#cccccc --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Bottom_Copper.png -f \#00000000 -b \#cccccc "$intermediate_layers"/"$currentInput_name".bottommask.gbr -f \#ccccccFF "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#B18883FF "$intermediate_layers"/"$currentInput_name".bottom.gbr -f \#FFFFFFFF "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr -f \#000000FF "$intermediate_layers"/"$currentInput_name".outline.gbr
+	gerbv -b \#cccccc --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Bottom_Mask.png -f \#ccccccFF -b \#102c10 "$intermediate_layers"/"$currentInput_name".bottommask.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#00000000 "$intermediate_layers"/"$currentInput_name".bottom.gbr -f \#FFFFFFFF "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr -f \#ccccccFF "$intermediate_layers"/"$currentInput_name".outline.gbr
+	gerbv -a -b \#FFFFFF --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Bottom_Outline.png -f \#00000000 "$intermediate_layers"/"$currentInput_name".bottommask.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#00000000 "$intermediate_layers"/"$currentInput_name".bottom.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr -f \#000000FF "$intermediate_layers"/"$currentInput_name".outline.gbr
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Copper.png +flop -transparent \#cccccc "$currentSpecific_work_cad"/Bottom_Copper.png
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Mask.png +flop -transparent \#cccccc "$currentSpecific_work_cad"/Bottom_Mask.png
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Outline.png +flop -transparent \#cccccc "$currentSpecific_work_cad"/Bottom_Outline.png
+	
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Outline.png -bordercolor white -border 1x1 -alpha set -channel RGBA -fuzz 10% -fill none -floodfill +0+0 white -shave 1x1 "$currentSpecific_work_cad"/Bottom_Outline.png
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Outline.png -fuzz 100% -fill \#0a1a0a -opaque white "$currentSpecific_work_cad"/Bottom_BG.png
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Outline.png -channel a -negate +channel -fill \#cccccc -colorize 100% "$currentSpecific_work_cad"/Bottom_Outline.png
+	
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Mask.png -channel rgba -matte -fill "rgba(16,44,16,0.8)" -opaque \#102c10 "$currentSpecific_work_cad"/Bottom_Mask.png
+	
+	_imagemagick_limit_command composite "$currentSpecific_work_cad"/Bottom_Outline.png "$currentSpecific_work_cad"/Bottom_Mask.png "$currentSpecific_work_cad"/Bottom_Mask_Real.png
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Mask_Real.png -transparent \#cccccc "$currentSpecific_work_cad"/Bottom_Mask_Real.png
+	
+	_imagemagick_limit_command composite "$currentSpecific_work_cad"/Bottom_Mask_Real.png "$currentSpecific_work_cad"/Bottom_Copper.png "$currentSpecific_work_cad"/Bottom_All.png
+	_imagemagick_limit_command composite "$currentSpecific_work_cad"/Bottom_All.png "$currentSpecific_work_cad"/Bottom_BG.png "$currentSpecific_work_cad"/Bottom.png
+	
+	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom.png -background "#cccccc" -flatten "$currentSpecific_work_cad"/Bottom.png
+	
+	mv "$currentSpecific_work_cad"/Bottom.png "$currentSpecific_work_cad"/RenderBottom.png
+	#rm "$currentSpecific_work_cad"/Bottom*.png
+	
+	
+	_imagemagick_limit_command convert -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/RenderTop.png "$currentSpecific_work_cad"/RenderTop.pdf
+	_imagemagick_limit_command convert -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/RenderBottom.png "$currentSpecific_work_cad"/RenderBottom.pdf
+	_imagemagick_limit_command montage -density "$currentDPI"x"$currentDPI" -mode concatenate -bordercolor \#000000 -border 4 -geometry '+300+300' "$currentSpecific_work_cad"/RenderTop.png "$currentSpecific_work_cad"/RenderBottom.png "$currentSpecific_work_cad"/Model.pdf
+	
+	
+	mkdir -p "$se_out"/cad/"$currentInput_name"/
+	cp "$currentSpecific_work_cad"/* "$se_out"/cad/"$currentInput_name"/
+	
+	_messageNormal "Compile: CAD: end"
+}
+
+_geda_compile_layers() {
+	_geda_compile_layers_cad
+}
+
+
 
 _geda_compile_materials() {
 	true
+	#_geda_compile_materials_specific
 }
 
 
@@ -17393,9 +17576,7 @@ _geda_compile_materials() {
 
 
 _geda_compile_materials_sch() {
-	export currentOutDir="$se_out_tmp"/"$currentInput_name"
-	
-	mkdir -p "$currentOutDir"
+	true
 	
 	#"$intermediate_materials_sch"/machineBOM-complete.txt
 	#"$intermediate_materials_sch"/machineBOM-pure.txt
@@ -18581,7 +18762,8 @@ _compile_bash_shortcuts() {
 	
 	includeScriptList+=( "shortcuts/prompt"/visualPrompt.sh )
 	
-	[[ "$enUb_dev_heavy" == "true" ]] && includeScriptList+=( "shortcuts/dev"/devsearch.sh )
+	#[[ "$enUb_dev_heavy" == "true" ]] && 
+	includeScriptList+=( "shortcuts/dev"/devsearch.sh )
 	
 	[[ "$enUb_fakehome" == "true" ]] && [[ "$enUb_dev_heavy" == "true" ]] && includeScriptList+=( "shortcuts/dev/app"/devemacs.sh )
 	[[ "$enUb_fakehome" == "true" ]] && [[ "$enUb_dev_heavy" == "true" ]] && includeScriptList+=( "shortcuts/dev/app"/devatom.sh )
@@ -19091,7 +19273,8 @@ _compile_bash_program_prog() {
 	
 	
 	includeScriptList+=( core__geda___build_compile_cad.sh )
-	includeScriptList+=( core__geda___build_compile_materials.sh )
+	includeScriptList+=( core__geda___build_compile__layers.sh )
+	includeScriptList+=( core__geda___build_compile__materials.sh )
 	
 	includeScriptList+=( core__geda___build_compile.sh )
 	

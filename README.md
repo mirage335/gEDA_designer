@@ -172,6 +172,9 @@ https://www.smallbatchassembly.com/parts-browser/
 
 https://support.jlcpcb.com/article/84-how-to-generate-the-bom-and-centroid-file-from-kicad
 
+https://sourceforge.net/projects/eaglepcb2freecad/
+https://beta.sharecad.org/
+
 __Copyright__
 This file is part of gEDA_designer.
 
