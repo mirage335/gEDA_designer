@@ -16886,6 +16886,13 @@ _geda_compile_intermediate_materials_sch_comprehensive() {
 	echo '#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side' > "$intermediate_materials_sch"/"$currentInput_name"-mil.xy
 	_geda_compile_XY "$intermediate_materials"/"$currentInput_name"-mil.xy "$intermediate_materials_sch"/"$currentInput_name".bom "$intermediate_materials_sch"/"$currentInput_name"-mil.xy _geda_compile_XY_line_comprehensive
 	
+	
+	echo '#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side' > "$intermediate_materials_sch"/"$currentInput_name"-in.xy
+	_geda_compile_XY "$intermediate_materials"/"$currentInput_name"-in.xy "$intermediate_materials_sch"/"$currentInput_name".bom "$intermediate_materials_sch"/"$currentInput_name"-in.xy _geda_compile_XY_line_comprehensive
+	
+	echo '#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side' > "$intermediate_materials_sch"/"$currentInput_name"-mm.xy
+	_geda_compile_XY "$intermediate_materials"/"$currentInput_name"-mm.xy "$intermediate_materials_sch"/"$currentInput_name".bom "$intermediate_materials_sch"/"$currentInput_name"-mm.xy _geda_compile_XY_line_comprehensive
+	
 }
 
 
@@ -17471,6 +17478,8 @@ _geda_compile_layers_cad() {
 	#Inches. Circles will be approximate
 	#inkscape -E "$currentSpecific_work_cad"/combined_direct.dxf "$currentSpecific_work_cad"/combined.svg
 	inkscape -E "$currentSpecific_work_cad"/combined.eps "$currentSpecific_work_cad"/combined.svg
+	
+	# CAUTION: DXF export is considered unreliable. Prefer SVG.
 	pstoedit -dt -f dxf "$currentSpecific_work_cad"/combined.eps "$currentSpecific_work_cad"/combined.dxf
 	
 	
