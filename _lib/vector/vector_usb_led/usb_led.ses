@@ -1,0 +1,247 @@
+
+(session usb_led.ses
+  (base_design usb_led.dsn)
+  (placement
+    (resolution mm 1000000)
+    (component 465
+      (place USB 5659400 6210000 front 0)
+    )
+    (component 477
+      (place T2 12454700 8756300 front 0)
+    )
+    (component 506
+      (place T1 12454700 7740300 front 0)
+    )
+    (component 535
+      (place C1 13906500 2558800 front 0)
+    )
+    (component 541
+      (place C2 14922500 2558800 front 0)
+    )
+    (component 547
+      (place R1 14306300 1143000 front 0)
+    )
+    (component 553
+      (place LED1 16192500 1143000 front 0)
+    )
+    (component 559
+      (place R2 14306300 1143000 back 0)
+    )
+    (component 565
+      (place LED2 16192500 1143000 back 0)
+    )
+    (component 571
+      (place FID2 18351500 7874000 front 0)
+    )
+    (component 576
+      (place FID1 15811500 10414000 front 0)
+    )
+    (component 581
+      (place FID3 15811500 10414000 back 0)
+    )
+    (component 586
+      (place FID4 18351500 7874000 back 0)
+    )
+  )
+  (was_is
+  )
+  (routes 
+    (resolution mm 1000000)
+    (parser
+      (host_cad "gEDA PCB")
+      (host_version 1.99z)
+    )
+    (library_out 
+      (padstack via_508000_254000
+        (shape
+          (circle top 508000 0 0)
+        )
+        (shape
+          (circle ground 508000 0 0)
+        )
+        (shape
+          (circle signal2 508000 0 0)
+        )
+        (shape
+          (circle signal3 508000 0 0)
+        )
+        (shape
+          (circle power 508000 0 0)
+        )
+        (shape
+          (circle outline 508000 0 0)
+        )
+        (shape
+          (circle spare 508000 0 0)
+        )
+        (shape
+          (circle bottom 508000 0 0)
+        )
+        (attach off)
+      )
+    )
+    (network_out 
+      (net GND
+        (wire
+          (path top 152400
+            13906500 2958600
+            13906500 6654900
+            13170000 7391400
+          )
+        )
+        (wire
+          (path top 152400
+            14922500 2958600
+            13906500 2958600
+          )
+        )
+        (wire
+          (path top 152400
+            12484100 7391400
+            13170000 7391400
+          )
+        )
+        (wire
+          (path top 152400
+            16877200 1914800
+            15833400 2958600
+            14922500 2958600
+          )
+        )
+        (wire
+          (path bottom 152400
+            16592300 1143000
+            16592300 1721500
+          )
+        )
+        (wire
+          (path top 152400
+            16592300 1143000
+            16592300 1721500
+          )
+        )
+        (wire
+          (path top 152400
+            16877200 1914800
+            16683900 1721500
+            16592300 1721500
+          )
+        )
+        (via via_508000_254000 16877200 1914800
+        )
+        (wire
+          (path bottom 152400
+            16592300 1721500
+            16683900 1721500
+            16877200 1914800
+          )
+        )
+      )
+      (net unnamed_net1
+        (wire
+          (path top 152400
+            13106400 7899400
+            13042900 7899400
+            12966700 7975600
+          )
+        )
+        (wire
+          (path top 152400
+            12128500 8051800
+            12153900 8051800
+            12242800 7962900
+          )
+        )
+        (wire
+          (path top 152400
+            12496800 7962900
+            12420600 7962900
+          )
+        )
+        (wire
+          (path top 152400
+            12547600 7962900
+            12496800 7962900
+          )
+        )
+        (wire
+          (path top 152400
+            12496800 7962900
+            12496800 8051800
+          )
+        )
+        (wire
+          (path top 152400
+            12725400 7962900
+            12547600 7962900
+          )
+        )
+      )
+      (net unnamed_net3
+        (wire
+          (path top 152400
+            15792700 1143000
+            14706100 1143000
+          )
+        )
+      )
+      (net unnamed_net4
+        (wire
+          (path bottom 152400
+            15792700 1143000
+            14706100 1143000
+          )
+        )
+      )
+      (net Vcc
+        (wire
+          (path top 152400
+            14922500 2159000
+            13906500 2159000
+          )
+        )
+        (wire
+          (path top 152400
+            13906500 2159000
+            13906500 1680400
+          )
+        )
+        (wire
+          (path top 152400
+            13667200 1143000
+            13667200 1441100
+            13906500 1680400
+          )
+        )
+        (wire
+          (path top 152400
+            13667200 1143000
+            13427900 1143000
+          )
+        )
+        (wire
+          (path top 152400
+            13906500 1143000
+            13667200 1143000
+          )
+        )
+        (wire
+          (path top 152400
+            13247500 1056200
+            13341100 1056200
+            13427900 1143000
+          )
+        )
+        (wire
+          (path bottom 152400
+            13906500 1143000
+            13334300 1143000
+            13247500 1056200
+          )
+        )
+        (via via_508000_254000 13247500 1056200
+        )
+      )
+    )
+  )
+)

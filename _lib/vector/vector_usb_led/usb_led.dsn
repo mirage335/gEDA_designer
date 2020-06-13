@@ -1,0 +1,290 @@
+(pcb notnamed
+  (parser
+    (string_quote ")
+    (space_in_quoted_tokens on)
+    (host_cad "gEDA PCB")
+    (host_version "1.99z")
+  )
+  (resolution mm 1000000)
+  (structure
+    (layer "top"
+      (type signal)
+    )
+    (layer "ground"
+      (type signal)
+    )
+    (layer "signal2"
+      (type signal)
+    )
+    (layer "signal3"
+      (type signal)
+    )
+    (layer "power"
+      (type signal)
+    )
+    (layer "outline"
+      (type signal)
+    )
+    (layer "spare"
+      (type signal)
+    )
+    (layer "bottom"
+      (type signal)
+    )
+    (boundary
+      (rect pcb 0.0 0.0 152.400000 127.000000)
+    )
+    (via via_508000_254000)
+    (rule
+      (width 0.1524)
+      (clear 0.1524)
+      (clear 0.1524 (type wire_area))
+      (clear 0.1524 (type via_smd via_pin))
+      (clear 0.1524 (type smd_smd))
+      (clear 0.1524 (type default_smd))
+    )
+  )
+  (placement
+    (component 465
+      (place "USB" 5.659424 6.209995 front 0 (PN 0))
+    )
+    (component 477
+      (place "T2" 12.454689 8.756315 front 0 (PN 0))
+    )
+    (component 506
+      (place "T1" 12.454689 7.740315 front 0 (PN 0))
+    )
+    (component 535
+      (place "C1" 13.906500 2.558800 front 0 (PN 0))
+    )
+    (component 541
+      (place "C2" 14.922500 2.558800 front 0 (PN 0))
+    )
+    (component 547
+      (place "R1" 14.306300 1.143000 front 0 (PN 0))
+    )
+    (component 553
+      (place "LED1" 16.192500 1.143000 front 0 (PN 0))
+    )
+    (component 559
+      (place "R2" 14.306300 1.143000 back 0 (PN 0))
+    )
+    (component 565
+      (place "LED2" 16.192500 1.143000 back 0 (PN 0))
+    )
+    (component 571
+      (place "FID2" 18.351500 7.874000 front 0 (PN 0))
+    )
+    (component 576
+      (place "FID1" 15.811500 10.414000 front 0 (PN 0))
+    )
+    (component 581
+      (place "FID3" 15.811500 10.414000 back 0 (PN 0))
+    )
+    (component 586
+      (place "FID4" 18.351500 7.874000 back 0 (PN 0))
+    )
+  )
+  (library
+    (image 465
+      (pin Smd_rect_8500110x999998 "4" -0.642924 3.746805)
+      (pin Smd_rect_6999986x999998 "3" 0.107138 1.246683)
+      (pin Smd_rect_6999986x999998 "2" 0.107138 -1.253185)
+      (pin Smd_rect_8500110x999998 "1" -0.642924 -3.753307)
+      (pin Smd_rect_10287000x10160000 "5" 1.071576 0.013005)
+    )
+    (image 477
+      (pin Smd_rect_914400x152400 "2" 0.029411 -0.348915)
+      (pin Smd_rect_330200x152400 "2" 0.499311 -0.260015)
+      (pin Smd_rect_330200x152400 "2" -0.440489 -0.260015)
+      (pin Smd_rect_533400x152400 "2" -0.719889 -0.171115)
+      (pin Smd_rect_279400x152400 "2" 0.651711 -0.171115)
+      (pin Smd_rect_304800x152400 "2" -0.199189 -0.272715)
+      (pin Smd_rect_304800x152400 "2" -0.046789 -0.272715)
+      (pin Smd_rect_304800x152400 "2" 0.258011 -0.272715)
+      (pin Smd_rect_304800x152400 "2" 0.105611 -0.272715)
+      (pin Smd_rect_939800x152400 "1" 0.042111 0.311485)
+      (pin Smd_rect_304800x152400 "1" 0.512011 0.235285)
+      (pin Smd_rect_304800x152400 "1" -0.427789 0.235285)
+      (pin Smd_rect_558800x152400 "1" -0.707189 0.159085)
+      (pin Smd_rect_279400x152400 "1" 0.651711 0.159085)
+      (pin Smd_rect_330200x152400 "1" -0.211889 0.222585)
+      (pin Smd_rect_203200x152400 "1" -0.326189 0.311485)
+      (pin Smd_rect_330200x152400 "1" -0.034089 0.222585)
+      (pin Smd_rect_330200x152400 "1" 0.092911 0.222585)
+      (pin Smd_rect_330200x152400 "1" 0.270711 0.222585)
+    )
+    (image 506
+      (pin Smd_rect_914400x152400 "2" 0.029411 -0.348915)
+      (pin Smd_rect_330200x152400 "2" 0.499311 -0.260015)
+      (pin Smd_rect_330200x152400 "2" -0.440489 -0.260015)
+      (pin Smd_rect_533400x152400 "2" -0.719889 -0.171115)
+      (pin Smd_rect_279400x152400 "2" 0.651711 -0.171115)
+      (pin Smd_rect_304800x152400 "2" -0.199189 -0.272715)
+      (pin Smd_rect_304800x152400 "2" -0.046789 -0.272715)
+      (pin Smd_rect_304800x152400 "2" 0.258011 -0.272715)
+      (pin Smd_rect_304800x152400 "2" 0.105611 -0.272715)
+      (pin Smd_rect_939800x152400 "1" 0.042111 0.311485)
+      (pin Smd_rect_304800x152400 "1" 0.512011 0.235285)
+      (pin Smd_rect_304800x152400 "1" -0.427789 0.235285)
+      (pin Smd_rect_558800x152400 "1" -0.707189 0.159085)
+      (pin Smd_rect_279400x152400 "1" 0.651711 0.159085)
+      (pin Smd_rect_330200x152400 "1" -0.211889 0.222585)
+      (pin Smd_rect_203200x152400 "1" -0.326189 0.311485)
+      (pin Smd_rect_330200x152400 "1" -0.034089 0.222585)
+      (pin Smd_rect_330200x152400 "1" 0.092911 0.222585)
+      (pin Smd_rect_330200x152400 "1" 0.270711 0.222585)
+    )
+    (image 535
+      (pin Smd_rect_699516x499872 "1" 0.000000 -0.399796)
+      (pin Smd_rect_699516x499872 "2" 0.000000 0.399796)
+    )
+    (image 541
+      (pin Smd_rect_699516x499872 "1" 0.000000 -0.399796)
+      (pin Smd_rect_699516x499872 "2" 0.000000 0.399796)
+    )
+    (image 547
+      (pin Smd_rect_499872x699516 "1" -0.399796 0.000000)
+      (pin Smd_rect_499872x699516 "2" 0.399796 0.000000)
+    )
+    (image 553
+      (pin Smd_rect_499872x699516 "1" -0.399796 0.000000)
+      (pin Smd_rect_499872x699516 "2" 0.399796 0.000000)
+    )
+    (image 559
+      (pin Smd_rect_499872x699516 "1" 0.399796 0.000000)
+      (pin Smd_rect_499872x699516 "2" -0.399796 0.000000)
+    )
+    (image 565
+      (pin Smd_rect_499872x699516 "1" 0.399796 0.000000)
+      (pin Smd_rect_499872x699516 "2" -0.399796 0.000000)
+    )
+    (image 571
+      (keepout "" (rect "top" -0.500000 -0.500000 0.500000 0.500000))
+    )
+    (image 576
+      (keepout "" (rect "top" -0.500000 -0.500000 0.500000 0.500000))
+    )
+    (image 581
+      (keepout "" (rect "bottom" -0.500000 -0.500000 0.500000 0.500000))
+    )
+    (image 586
+      (keepout "" (rect "bottom" -0.500000 -0.500000 0.500000 0.500000))
+    )
+    (padstack Smd_rect_8500110x999998
+      (shape (rect "top" -4.250055 -0.499999 4.250055 0.499999))
+      (attach off)
+    )
+    (padstack Smd_rect_6999986x999998
+      (shape (rect "top" -3.499993 -0.499999 3.499993 0.499999))
+      (attach off)
+    )
+    (padstack Smd_rect_10287000x10160000
+      (shape (rect "top" -5.143500 -5.080000 5.143500 5.080000))
+      (attach off)
+    )
+    (padstack Smd_rect_914400x152400
+      (shape (rect "top" -0.457200 -0.076200 0.457200 0.076200))
+      (attach off)
+    )
+    (padstack Smd_rect_330200x152400
+      (shape (rect "top" -0.165100 -0.076200 0.165100 0.076200))
+      (attach off)
+    )
+    (padstack Smd_rect_533400x152400
+      (shape (rect "top" -0.266700 -0.076200 0.266700 0.076200))
+      (attach off)
+    )
+    (padstack Smd_rect_279400x152400
+      (shape (rect "top" -0.139700 -0.076200 0.139700 0.076200))
+      (attach off)
+    )
+    (padstack Smd_rect_304800x152400
+      (shape (rect "top" -0.152400 -0.076200 0.152400 0.076200))
+      (attach off)
+    )
+    (padstack Smd_rect_939800x152400
+      (shape (rect "top" -0.469900 -0.076200 0.469900 0.076200))
+      (attach off)
+    )
+    (padstack Smd_rect_558800x152400
+      (shape (rect "top" -0.279400 -0.076200 0.279400 0.076200))
+      (attach off)
+    )
+    (padstack Smd_rect_203200x152400
+      (shape (rect "top" -0.101600 -0.076200 0.101600 0.076200))
+      (attach off)
+    )
+    (padstack Smd_rect_699516x499872
+      (shape (rect "top" -0.349758 -0.249936 0.349758 0.249936))
+      (attach off)
+    )
+    (padstack Smd_rect_499872x699516
+      (shape (rect "top" -0.249936 -0.349758 0.249936 0.349758))
+      (attach off)
+    )
+    (padstack Smd_rect_1000000x1000000
+      (shape (rect "top" -0.500000 -0.500000 0.500000 0.500000))
+      (attach off)
+    )
+    (padstack via_508000_254000
+      (shape (circle signal 0.508000))
+      (attach off)
+    )
+  )
+  (network
+    (net "GND"
+      (pins "C1"-"2" "C2"-"2" "LED1"-"2" "LED2"-"2" "T1"-"2" "T2"-"2" "USB"-"4" "USB"-"5")
+    )
+    (net "unnamed_net1"
+      (pins "T1"-"1" "USB"-"2")
+    )
+    (net "unnamed_net2"
+      (pins "T2"-"1" "USB"-"3")
+    )
+    (net "unnamed_net3"
+      (pins "LED1"-"1" "R1"-"2")
+    )
+    (net "unnamed_net4"
+      (pins "LED2"-"1" "R2"-"2")
+    )
+    (net "Vcc"
+      (pins "C1"-"1" "C2"-"1" "R1"-"1" "R2"-"1" "USB"-"1")
+    )
+    (class geda_default "GND" "unnamed_net1" "unnamed_net2" "unnamed_net3" "unnamed_net4" "Vcc"
+      (circuit
+        (use_via via_508000_254000)
+      )
+      (rule (width 0.152400))
+    )
+  )
+    (wiring
+        (wire (path outline 0.152400 13.906500 5.715000 14.668500 4.953000)
+            (type protect))
+        (wire (path outline 0.152400 14.668500 4.953000 15.430500 4.953000)
+            (type protect))
+        (wire (path outline 0.152400 16.446500 3.937000 16.446500 2.667000)
+            (type protect))
+        (wire (path outline 0.152400 16.446500 2.667000 16.700500 2.413000)
+            (type protect))
+        (wire (path outline 0.152400 16.700500 2.413000 17.970500 2.413000)
+            (type protect))
+        (wire (path outline 0.152400 17.970500 2.413000 17.970500 0.127000)
+            (type protect))
+        (wire (path outline 0.152400 17.970500 0.127000 0.190500 0.127000)
+            (type protect))
+        (wire (path outline 0.152400 0.190500 0.127000 0.190500 12.319000)
+            (type protect))
+        (wire (path outline 0.152400 16.446500 3.937000 15.430500 4.953000)
+            (type protect))
+        (wire (path outline 0.152400 0.190500 12.319000 20.256500 12.319000)
+            (type protect))
+        (wire (path outline 0.152400 20.256500 12.319000 20.256500 5.969000)
+            (type protect))
+        (wire (path outline 0.152400 20.256500 5.969000 13.906500 5.969000)
+            (type protect))
+        (wire (path outline 0.152400 13.906500 5.969000 13.906500 5.715000)
+            (type protect))
+
+    )
+)

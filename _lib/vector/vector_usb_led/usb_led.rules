@@ -1,0 +1,126 @@
+
+(rules PCB usb_led
+  (snap_angle 
+    fortyfive_degree
+  )
+  (autoroute_settings
+    (fanout off)
+    (eu.mihosoft.freerouting.autoroute on)
+    (postroute on)
+    (vias on)
+    (via_costs 50)
+    (plane_via_costs 5)
+    (start_ripup_costs 100)
+    (start_pass_no 1)
+    (layer_rule top
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 2.6)
+      (against_preferred_direction_trace_costs 3.8)
+    )
+    (layer_rule ground
+      (active on)
+      (preferred_direction vertical)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 1.8)
+    )
+    (layer_rule signal2
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 2.2)
+    )
+    (layer_rule signal3
+      (active on)
+      (preferred_direction vertical)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 1.8)
+    )
+    (layer_rule power
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 2.2)
+    )
+    (layer_rule outline
+      (active on)
+      (preferred_direction vertical)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 1.8)
+    )
+    (layer_rule spare
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 2.2)
+    )
+    (layer_rule bottom
+      (active on)
+      (preferred_direction vertical)
+      (preferred_direction_trace_costs 2.6)
+      (against_preferred_direction_trace_costs 3.4)
+    )
+  )
+  (rule
+    (width 0.1524)
+    (clear 0.1524)
+    (clear 0.0762 (type smd_to_turn_gap))
+  )
+  (padstack "via_508000_254000"
+    (shape
+      (circle top 0.508 0.0 0.0)
+    )
+    (shape
+      (circle ground 0.508 0.0 0.0)
+    )
+    (shape
+      (circle signal2 0.508 0.0 0.0)
+    )
+    (shape
+      (circle signal3 0.508 0.0 0.0)
+    )
+    (shape
+      (circle power 0.508 0.0 0.0)
+    )
+    (shape
+      (circle outline 0.508 0.0 0.0)
+    )
+    (shape
+      (circle spare 0.508 0.0 0.0)
+    )
+    (shape
+      (circle bottom 0.508 0.0 0.0)
+    )
+    (attach off)
+  )
+  (via 
+    "via_508000_254000" "via_508000_254000" via
+  )
+  (via_rule
+    default "via_508000_254000"
+  )
+  (via_rule
+    "geda_default" "via_508000_254000"
+  )
+  (class default
+    (clearance_class default)
+    (via_rule default)
+    (rule
+      (width 0.1524)
+    )
+    (circuit 
+      (use_layer top ground signal2 signal3 power outline spare bottom)
+    )
+  )
+  (class "geda_default"
+    GND "unnamed_net1" "unnamed_net2" "unnamed_net3" "unnamed_net4" Vcc
+    (clearance_class default)
+    (via_rule geda_default)
+    (rule
+      (width 0.1524)
+    )
+    (circuit 
+      (use_layer top ground signal2 signal3 power outline spare bottom)
+    )
+  )
+)

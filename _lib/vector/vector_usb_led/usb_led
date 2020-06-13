@@ -1,0 +1,4 @@
+elements-dir ./gedasymbols/footprints
+elements-dir ./customParts/footprints
+schematics usb_led.sch
+output-name usb_led

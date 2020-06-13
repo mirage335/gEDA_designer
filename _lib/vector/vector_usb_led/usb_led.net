@@ -1,0 +1,6 @@
+unnamed_net4	LED1-2 R1-1 
+unnamed_net3	LED2-2 R2-1 
+unnamed_net2	T2-1 USB-3 
+Vcc	LED1-1 C1-1 LED2-1 C2-1 USB-1 
+GND	T1-2 R1-2 C1-2 R2-2 C2-2 T2-2 USB-5 USB-4 
+unnamed_net1	T1-1 USB-2 
