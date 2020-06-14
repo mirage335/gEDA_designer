@@ -6,6 +6,8 @@ _geda_compile_materials() {
 _geda_compile_materials_sch() {
 	true
 	
+	_geda_compile_materials_sch_bom
+	
 	#_check_geda_intermediate_all
 	
 	

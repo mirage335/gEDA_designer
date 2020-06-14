@@ -4209,6 +4209,7 @@ _compile_bash_program_prog() {
 	
 	
 	includeScriptList+=( core__geda___build_compile_cad.sh )
+	includeScriptList+=( core__geda___build_compile_bom.sh )
 	includeScriptList+=( core__geda___build_compile__layers.sh )
 	includeScriptList+=( core__geda___build_compile__materials.sh )
 	

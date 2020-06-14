@@ -51,6 +51,16 @@ _geda_compile_bom() {
 		description=$(echo "$currentLine_bom" | cut -d ':' -f4)
 		
 		cost=$(echo "$currentLine_bom" | cut -d ':' -f5)
+		if [[ "$cost" == *'unknown'* ]] || [[ "$cost" == "" ]]
+		then
+			cost=$(echo "$description" | sed 's/\ [^0-9].*//g' | tr -dc '0-9.')
+		fi
+		! echo "$cost" | grep -E '[0-9]' > /dev/null 2>&1 && cost=""
+		if [[ "$cost" != "" ]] && ! echo "$cost" | grep -E '^\$[0-9]|^\.[0-9]' > /dev/null 2>&1
+		then
+			# WARNING: Defaults to USD .
+			cost='$'"$cost"
+		fi
 		
 		device=$(echo "$currentLine_bom" | cut -d ':' -f6)
 		mfr=$(echo "$currentLine_bom" | cut -d ':' -f7)
