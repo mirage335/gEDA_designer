@@ -75,7 +75,7 @@ _test_prog() {
 	_test_prog_imagemagick_limit
 	
 	
-	
+	_getDep zip
 	
 	
 	

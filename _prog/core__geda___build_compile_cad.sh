@@ -1,5 +1,6 @@
 _geda_compile_layers_cad() {
 	_messageNormal "Compile: CAD"
+	cd "$se_in_tmp"
 	
 	#"$intermediate_layers"/"$currentInput_name"
 	
@@ -9,7 +10,7 @@ _geda_compile_layers_cad() {
 	
 	#"$currentSpecific_work_cad"/
 	local currentSpecific_work_cad
-	currentSpecific_work_cad="$safeTmp"/_specific/cad
+	currentSpecific_work_cad="$safeTmp"/_specific/cad/"$currentInput_name"
 	mkdir -p "$currentSpecific_work_cad"
 	
 	

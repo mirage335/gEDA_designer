@@ -1,4 +1,7 @@
 
+
+# ATTENTION: Overload with ops (including sketch ops) to FORCE incomplete build attempt.
+# DANGER: Incomplete build attempt ability has not been adequately developed and tested. Forcing this may (however unlikely) be able to cause damage (ie. inappropraite rm) to the host system.
 _check_geda_intermediate_all() {
 	local anticipated_attribsFile
 	anticipated_attribsFile=$(_findDir "$currentInput")
@@ -7,6 +10,16 @@ _check_geda_intermediate_all() {
 	then
 		# Comprehensive attribs file is expected to have been provided by "_in_overlay" regardless of any other attribs file.
 		_messagePlain_bad 'fail: unexpected: missing: attribs file!'
+		_stop 1
+	fi
+	
+	local anticipated_schFile
+	anticipated_schFile=$(_findDir "$currentInput")
+	anticipated_schFile="$anticipated_schFile"/"$currentInput_name".sch
+	if ! [[ -e "$anticipated_schFile" ]]
+	then
+		# Without 'sch' file, relevant intermediate xy and similar files may not have been produced.
+		_messagePlain_bad 'fail: unexpected: missing: sch file!'
 		_stop 1
 	fi
 	

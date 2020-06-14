@@ -16662,7 +16662,7 @@ _test_prog() {
 	_test_prog_imagemagick_limit
 	
 	
-	
+	_getDep zip
 	
 	
 	
@@ -16772,15 +16772,118 @@ _main() {
 
 
 
+_geda_compile_bom_line_comprehensive() {
+	refdes=$(echo "$refdes" | sed 's/,/;/g')
+	echo "$refdes,$footprint,$value,$description,$cost,$device,$mfr,$mfrpn,$dst,$dstpn,$link,$link_page,$supplier,$sbapn,$kitting,$kitting_d,$nobom,$noplace,$qty"
+}
+
+
+#"$1" == bom2 (comprehensive, exported by 'gnetlist')
+#"$2" == RESERVED
+#"$3" == out
+#shift
+#shift
+#shift
+#"$@" == line write echo (function)
+# EXAMPLE
+#echo 'refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,nobom,noplace,qty' > ./test.out
+#_geda_compile_bom ./machineBOM-pure.txt "" ./test.out _geda_compile_XY_line_comprehensive
+_geda_compile_bom() {
+	[[ "$1" == "" ]] && return 1
+	#[[ "$2" == "" ]] && return 1
+		[[ "$2" != "" ]] && return 1
+	[[ "$3" == "" ]] && return 1
+	
+	local currentFile_bom
+	currentFile_bom="$1"
+	
+	local currentFile_xy
+	currentFile_xy="$2"
+	
+	local currentFile_out
+	currentFile_out="$3"
+	
+	shift
+	shift
+	shift
+	
+	local currentLine_xy
+	local currentLine_bom
+	
+	
+	#! [[ -e "$currentFile_xy" ]] && return 1
+	! [[ -e "$currentFile_bom" ]] && return 1
+	
+	while read currentLine_bom
+	do
+		refdes=$(echo "$currentLine_bom" | cut -d ':' -f1)
+		footprint=$(echo "$currentLine_bom" | cut -d ':' -f2)
+		value=$(echo "$currentLine_bom" | cut -d ':' -f3)
+		
+		description=$(echo "$currentLine_bom" | cut -d ':' -f4)
+		
+		cost=$(echo "$currentLine_bom" | cut -d ':' -f5)
+		
+		device=$(echo "$currentLine_bom" | cut -d ':' -f6)
+		mfr=$(echo "$currentLine_bom" | cut -d ':' -f7)
+		mfrpn=$(echo "$currentLine_bom" | cut -d ':' -f8)
+		dst=$(echo "$currentLine_bom" | cut -d ':' -f9)
+		dstpn=$(echo "$currentLine_bom" | cut -d ':' -f10)
+		link=$(echo "$currentLine_bom" | cut -d ':' -f11)
+		link_page=$(echo "$currentLine_bom" | cut -d ':' -f12)
+		
+		supplier=$(echo "$currentLine_bom" | cut -d ':' -f13)
+		sbapn=$(echo "$currentLine_bom" | cut -d ':' -f14)
+		kitting=$(echo "$currentLine_bom" | cut -d ':' -f15)
+		kitting_d=$(echo "$currentLine_bom" | cut -d ':' -f16)
+		
+		nobom=$(echo "$currentLine_bom" | cut -d ':' -f17)
+		noplace=$(echo "$currentLine_bom" | cut -d ':' -f18)
+		
+		qty=$(echo "$currentLine_bom" | cut -d ':' -f19)
+		
+		
+		"$@" >> "$currentFile_out"
+		
+	done < "$currentFile_bom"
+		
+		
+	unset refdes footprint value description cost device mfr mfrpn dst dstpn link link_page supplier sbapn kitting kitting_d Xpos Ypos rot side
+		
+	
+	
+	#sed -i 's/,unknown/,/g' "$currentFile_out"
+	
+	
+	[[ ! -e "$currentFile_out" ]] && return 1
+	return 0
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 _geda_compile_XY_line_comprehensive() {
 	#echo '#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side' > "$intermediate_materials_sch"/"$currentInput_name"-mil.xy
+	refdes=$(echo "$refdes" | sed 's/,/;/g')
 	echo "$refdes,$footprint,$value,$description,$cost,$device,$mfr,$mfrpn,$dst,$dstpn,$link,$link_page,$supplier,$sbapn,$kitting,$kitting_d,$Xpos,$Ypos,$rot,$side"
 }
 
 
-#"$1" == xyfile (comprehensive, exported by 'pcb')
-#"$2" == bom (comprehensive, exported by 'gnetlist')
+#"$1" == bom (comprehensive, exported by 'gnetlist')
+#"$2" == xyfile (comprehensive, exported by 'pcb')
 #"$3" == out
 #shift
 #shift
@@ -16788,17 +16891,17 @@ _geda_compile_XY_line_comprehensive() {
 #"$@" == line write echo (function)
 # EXAMPLE
 #echo '#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side' > ./test.out
-#_geda_compile_XY ./test-mil.xy ./test-sch.bom ./test.out _geda_compile_XY_line_comprehensive
+#_geda_compile_XY ./test-sch.bom ./test-mil.xy ./test.out _geda_compile_XY_line_comprehensive
 _geda_compile_XY() {
 	[[ "$1" == "" ]] && return 1
 	[[ "$2" == "" ]] && return 1
 	[[ "$3" == "" ]] && return 1
 	
-	local currentFile_xy
-	currentFile_xy="$1"
-	
 	local currentFile_bom
-	currentFile_bom="$2"
+	currentFile_bom="$1"
+	
+	local currentFile_xy
+	currentFile_xy="$2"
 	
 	local currentFile_out
 	currentFile_out="$3"
@@ -16884,14 +16987,14 @@ _geda_compile_intermediate_materials_sch_comprehensive() {
 	
 	
 	echo '#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side' > "$intermediate_materials_sch"/"$currentInput_name"-mil.xy
-	_geda_compile_XY "$intermediate_materials"/"$currentInput_name"-mil.xy "$intermediate_materials_sch"/"$currentInput_name".bom "$intermediate_materials_sch"/"$currentInput_name"-mil.xy _geda_compile_XY_line_comprehensive
+	_geda_compile_XY "$intermediate_materials_sch"/"$currentInput_name".bom "$intermediate_materials"/"$currentInput_name"-mil.xy "$intermediate_materials_sch"/"$currentInput_name"-mil.xy _geda_compile_XY_line_comprehensive
 	
 	
 	echo '#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side' > "$intermediate_materials_sch"/"$currentInput_name"-in.xy
-	_geda_compile_XY "$intermediate_materials"/"$currentInput_name"-in.xy "$intermediate_materials_sch"/"$currentInput_name".bom "$intermediate_materials_sch"/"$currentInput_name"-in.xy _geda_compile_XY_line_comprehensive
+	_geda_compile_XY "$intermediate_materials_sch"/"$currentInput_name".bom "$intermediate_materials"/"$currentInput_name"-in.xy "$intermediate_materials_sch"/"$currentInput_name"-in.xy _geda_compile_XY_line_comprehensive
 	
 	echo '#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side' > "$intermediate_materials_sch"/"$currentInput_name"-mm.xy
-	_geda_compile_XY "$intermediate_materials"/"$currentInput_name"-mm.xy "$intermediate_materials_sch"/"$currentInput_name".bom "$intermediate_materials_sch"/"$currentInput_name"-mm.xy _geda_compile_XY_line_comprehensive
+	_geda_compile_XY "$intermediate_materials_sch"/"$currentInput_name".bom "$intermediate_materials"/"$currentInput_name"-mm.xy "$intermediate_materials_sch"/"$currentInput_name"-mm.xy _geda_compile_XY_line_comprehensive
 	
 }
 
@@ -16901,6 +17004,9 @@ _geda_compile_intermediate_materials_sch_comprehensive() {
 
 
 
+
+# ATTENTION: Overload with ops (including sketch ops) to FORCE incomplete build attempt.
+# DANGER: Incomplete build attempt ability has not been adequately developed and tested. Forcing this may (however unlikely) be able to cause damage (ie. inappropraite rm) to the host system.
 _check_geda_intermediate_all() {
 	local anticipated_attribsFile
 	anticipated_attribsFile=$(_findDir "$currentInput")
@@ -16909,6 +17015,16 @@ _check_geda_intermediate_all() {
 	then
 		# Comprehensive attribs file is expected to have been provided by "_in_overlay" regardless of any other attribs file.
 		_messagePlain_bad 'fail: unexpected: missing: attribs file!'
+		_stop 1
+	fi
+	
+	local anticipated_schFile
+	anticipated_schFile=$(_findDir "$currentInput")
+	anticipated_schFile="$anticipated_schFile"/"$currentInput_name".sch
+	if ! [[ -e "$anticipated_schFile" ]]
+	then
+		# Without 'sch' file, relevant intermediate xy and similar files may not have been produced.
+		_messagePlain_bad 'fail: unexpected: missing: sch file!'
 		_stop 1
 	fi
 	
@@ -17459,6 +17575,7 @@ _ops_geda_sketch() {
 
 _geda_compile_layers_cad() {
 	_messageNormal "Compile: CAD"
+	cd "$se_in_tmp"
 	
 	#"$intermediate_layers"/"$currentInput_name"
 	
@@ -17468,7 +17585,7 @@ _geda_compile_layers_cad() {
 	
 	#"$currentSpecific_work_cad"/
 	local currentSpecific_work_cad
-	currentSpecific_work_cad="$safeTmp"/_specific/cad
+	currentSpecific_work_cad="$safeTmp"/_specific/cad/"$currentInput_name"
 	mkdir -p "$currentSpecific_work_cad"
 	
 	
@@ -17555,42 +17672,140 @@ _geda_compile_layers() {
 
 _geda_compile_materials() {
 	true
-	#_geda_compile_materials_specific
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 _geda_compile_materials_sch() {
 	true
 	
+	#_check_geda_intermediate_all
+	
+	
+	#local currentSpecific_work
+	#currentSpecific_work="$safeTmp"/_specific/cad/"$currentInput_name"
+	#mkdir -p "$currentSpecific_work"
+	
+	
+	
+	
+	
+	
+	
+	
 	#"$intermediate_materials_sch"/machineBOM-complete.txt
 	#"$intermediate_materials_sch"/machineBOM-pure.txt
 	
+	#"$intermediate_materials"/"$currentInput_name"-mil.xy
+	#"$intermediate_materials"/"$currentInput_name"-in.xy
+	#"$intermediate_materials"/"$currentInput_name"-mm.xy
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	#"$intermediate_layers"/"$currentInput_name".bottom.gbr
+	#"$intermediate_layers"/"$currentInput_name".bottommask.gbr
+	#"$intermediate_layers"/"$currentInput_name".bottompaste.gbr
+	#"$intermediate_layers"/"$currentInput_name".bottomsilk.gbr
+	#"$intermediate_layers"/"$currentInput_name".fab.gbr
+	
+	#"$intermediate_layers"/"$currentInput_name".group1.gbr
+	#"$intermediate_layers"/"$currentInput_name".group2.gbr
+	#"$intermediate_layers"/"$currentInput_name".group3.gbr
+	#"$intermediate_layers"/"$currentInput_name".group4.gbr
+	
+	# Usually 'spare' layer. Warn if present.
+	#"$intermediate_layers"/"$currentInput_name".group7.gbr
+	
+	#"$intermediate_layers"/"$currentInput_name".outline.gbr
+	#"$intermediate_layers"/"$currentInput_name".plated-drill.cnc
+	#"$intermediate_layers"/"$currentInput_name".top.gbr
+	#"$intermediate_layers"/"$currentInput_name".topmask.gbr
+	#"$intermediate_layers"/"$currentInput_name".toppaste.gbr
+	#"$intermediate_layers"/"$currentInput_name".topsilk.gbr
+
+	
+	#mkdir -p "$se_out"/cad/"$currentInput_name"/
+	#cp "$currentSpecific_work"/* "$se_out"/cad/"$currentInput_name"/
+	
+	
+	
+	
+	
+	_geda_compile_materials_sch_pcbway
+	
+	
+	
 }
+
+
+
+
+
+
+
+
+
+_geda_compile_XY_line_pcbway() {
+	refdes=$(echo "$refdes" | sed 's/,/;/g')
+	echo "$refdes,$footprint,$value,$description,$cost,$device,$mfr,$mfrpn,$dst,$dstpn,$link,$link_page,$supplier,$sbapn,$kitting,$kitting_d,$Xpos,$Ypos,$rot,$side"
+}
+
+_geda_compile_bom_line_pcbway() {
+	refdes=$(echo "$refdes" | sed 's/,/;/g')
+	echo "$refdes,$footprint,$value,$description,$cost,$device,$mfr,$mfrpn,$dst,$dstpn,$link,$link_page,$supplier,$sbapn,$kitting,$kitting_d,$nobom,$noplace,$qty"
+}
+
+
+_geda_compile_materials_sch_pcbway() {
+	_messageNormal "Compile: PCBWay"
+	cd "$se_in_tmp"
+	_check_geda_intermediate_all
+	
+	local currentSpecific_work
+	currentSpecific_work="$safeTmp"/_specific/pcbway/"$currentInput_name"
+	mkdir -p "$currentSpecific_work"
+	
+	
+	# TODO: Correctly name and select out gerber files.
+	
+	
+	
+	echo '#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side' > "$currentSpecific_work"/"$currentInput_name"-mil.xy
+	_geda_compile_XY "$intermediate_materials_sch"/"$currentInput_name".bom "$intermediate_materials"/"$currentInput_name"-mil.xy "$currentSpecific_work"/"$currentInput_name"-mil.xy _geda_compile_XY_line_pcbway
+	
+	echo 'refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,nobom,noplace,qty' > "$currentSpecific_work"/"$currentInput_name".bom
+	_geda_compile_bom "$intermediate_materials_sch"/machineBOM-pure.txt "" "$currentSpecific_work"/"$currentInput_name".bom _geda_compile_bom_line_pcbway
+	
+	
+	
+	mkdir -p "$currentSpecific_work"/package
+	[[ "$currentSpecific_work" == "" ]] && _stop 1
+	[[ ! -e "$currentSpecific_work"/package ]] && _stop 1
+	cd "$currentSpecific_work"/package
+	rm -f "$currentSpecific_work"/package/*.zip > /dev/null 2>&1
+	
+	cp "$currentSpecific_work"/"$currentInput_name"-mil.xy "$currentSpecific_work"/package/
+	cp "$currentSpecific_work"/"$currentInput_name".bom "$currentSpecific_work"/package/
+	
+	zip -r "$currentInput_name" .
+	cd "$se_in_tmp"
+	
+	
+	
+	mkdir -p "$se_out"/pcbway/"$currentInput_name"/
+	#cp "$currentSpecific_work"/package/* "$se_out"/pcbway/"$currentInput_name"/
+	cp "$currentSpecific_work"/package/*.zip "$se_out"/pcbway/"$currentInput_name"/
+	
+	
+	cd "$se_in_tmp"
+	_messageNormal "Compile: PCBWay: end"
+}
+
 
 
 
