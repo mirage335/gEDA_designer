@@ -4201,6 +4201,8 @@ _compile_bash_program_prog() {
 	
 	
 	includeScriptList+=( core__geda____manufacturer__pcbway.sh )
+	includeScriptList+=( core__geda____manufacturer__oshpark.sh )
+	includeScriptList+=( core__geda____manufacturer__oshstencil.sh )
 	#includeScriptList+=( core__geda____manufacturer_default.sh )
 	
 	
@@ -4210,7 +4212,12 @@ _compile_bash_program_prog() {
 	
 	includeScriptList+=( core__geda___build_compile_cad.sh )
 	includeScriptList+=( core__geda___build_compile_bom.sh )
+	
+	includeScriptList+=( core__geda___build_compile__layers_oshpark.sh )
+	includeScriptList+=( core__geda___build_compile__layers_oshstencil.sh )
 	includeScriptList+=( core__geda___build_compile__layers.sh )
+	
+	includeScriptList+=( core__geda___build_compile__materials_pcbway.sh )
 	includeScriptList+=( core__geda___build_compile__materials.sh )
 	
 	includeScriptList+=( core__geda___build_compile.sh )
