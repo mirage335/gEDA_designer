@@ -3,6 +3,18 @@
 # ATTENTION: Overload with ops (including sketch ops) to FORCE incomplete build attempt.
 # DANGER: Incomplete build attempt ability has not been adequately developed and tested. Forcing this may (however unlikely) be able to cause damage (ie. inappropraite rm) to the host system.
 _check_geda_intermediate_all() {
+	[[ "$intermediate_layers" == "" ]] && _stop 1
+	[[ ! -e "$intermediate_layers" ]] && _stop 1
+	[[ ! -d "$intermediate_layers" ]] && _stop 1
+	
+	[[ "$intermediate_materials" == "" ]] && _stop 1
+	[[ ! -e "$intermediate_materials" ]] && _stop 1
+	[[ ! -d "$intermediate_materials" ]] && _stop 1
+	
+	[[ "$intermediate_materials_sch" == "" ]] && _stop 1
+	[[ ! -e "$intermediate_materials_sch" ]] && _stop 1
+	[[ ! -d "$intermediate_materials_sch" ]] && _stop 1
+	
 	local anticipated_attribsFile
 	anticipated_attribsFile=$(_findDir "$currentInput")
 	anticipated_attribsFile="$anticipated_attribsFile"/attribs
@@ -71,6 +83,7 @@ _geda_compile_intermediate_materials() {
 	#cd "$se_sketchDir"
 	cd "$se_in_tmp"
 	
+	export intermediate_layers="$se_out_tmp"/_intermediate/layers/"$currentInput_name"
 	export intermediate_materials="$se_out_tmp"/_intermediate/materials/"$currentInput_name"
 	
 	mkdir -p "$intermediate_materials"
@@ -109,6 +122,7 @@ _geda_compile_intermediate_materials_sch() {
 	#cd "$se_sketchDir"
 	cd "$se_in_tmp"
 	
+	export intermediate_layers="$se_out_tmp"/_intermediate/layers/"$currentInput_name"
 	export intermediate_materials="$se_out_tmp"/_intermediate/materials/"$currentInput_name"
 	export intermediate_materials_sch="$se_out_tmp"/_intermediate/materials_sch/"$currentInput_name"
 	
