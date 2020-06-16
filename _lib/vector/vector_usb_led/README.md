@@ -9,3 +9,19 @@ May be manufactured as dual-layer, quad-layer, or six-layer.
 
 * PCB-INTEGRAL Trace based connector... could be marked noplace/nobom or similar.
 
+# Valid Packages
+
+Intentionally, some of the packages generated are NOT valid. This is due to pcb file containing irrelevant layers, which are left in place as test cases for gEDA_designer scripts .
+
+
+At least some packages are valid for manufacturing.
+
+_build/pcbway/usb_led_noempty.zip
+_build/pcbway/usb_led_noempty-twoLayer.zip
+_build/pcbway/usb_led_noempty-fourLayer.zip
+_build/pcbway/usb_led_noempty-sixLayer.zip
+
+_build/oshpark/usb_led-twoLayer.zip
+_build/oshpark/usb_led_noempty.zip
+_build/oshpark/usb_led_noempty-twoLayer.zip
+_build/oshpark/usb_led_noempty-fourLayer.zip

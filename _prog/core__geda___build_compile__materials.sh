@@ -69,7 +69,7 @@ _geda_compile_materials_sch() {
 	_geda_compile_materials_sch_pcbway
 	
 	
-	
+	_geda_compile_materials_sch_geometry
 }
 
 

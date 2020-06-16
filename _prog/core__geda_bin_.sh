@@ -1,4 +1,7 @@
 
+# WARNING: Other EDA tools (eg. KiCAD) will likely require all of their binaries to be wrapped similarly.
+# ATTENTION: In practice, 'gschem' has no known production use (at least as related to the compile feature of _gEDA_designer), while 'gnetlist' and 'pcb' have been used directly.
+# Mostly serves as a hook and example.
 _gschem_executable() {
 	gschem "$@"
 }

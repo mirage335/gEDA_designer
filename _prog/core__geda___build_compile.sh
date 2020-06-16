@@ -153,10 +153,15 @@ _geda_compile__procedure() {
 	export se_out_tmp="$safeTmp"/_build
 	mkdir -p "$se_out_tmp"
 	mkdir -p "$se_out"
+	[[ ! -e "$se_out_tmp" ]] && _stop 1
+	[[ ! -e "$se_out" ]] && _stop 1
+	[[ "$se_out_tmp" == "" ]] && _stop 1
+	[[ "$se_out" == "" ]] && _stop 1
 	
 	
 	export se_in_tmp="$safeTmp"/_in
 	mkdir -p "$se_in_tmp"
+	[[ ! -e "$se_in_tmp" ]] && _stop 1
 	_geda_compile__in_copy
 	_prepare_geda_in_overlay
 	_prepare_geda_manufacturer

@@ -1,6 +1,131 @@
 
+
+_vector_pcb_30MHzLowPass() {
+	_start
+	
+	mkdir -p "$safeTmp"/vector/30MHzLowPass
+	_instance_internal "$scriptLib"/vector/30MHzLowPass/. "$safeTmp"/vector/30MHzLowPass/
+	
+	cd "$safeTmp"/vector/30MHzLowPass
+	
+	pcb -x gerber --all-layers --name-style fixed --gerberfile 30MHzLowPass 30MHzLowPass.pcb
+	
+	local currentHash
+	currentHash=$(cat 30MHzLowPass.top.gbr 30MHzLowPass.topmask.gbr 30MHzLowPass.toppaste.gbr 30MHzLowPass.topsilk.gbr 30MHzLowPass.outline.gbr 30MHzLowPass.plated-drill.cnc | grep -v '^G04' | md5sum | head -c 12)
+	_messagePlain_probe "$currentHash"
+	
+	
+	
+	# DANGER ONLY add hashes from versions known to produce ALL valid outputs for ALL packages . Test completely.
+	
+	# 4.2.0
+	[[ "$currentHash" == "f7d076b647a0" ]] && return 0
+	
+	
+	_messageFAIL
+	_stop 1
+}
+
+_vector_pcb_vector_usb_led() {
+	_start
+	
+	mkdir -p "$safeTmp"/vector/vector_usb_led
+	_instance_internal "$scriptLib"/vector/vector_usb_led/. "$safeTmp"/vector/vector_usb_led/
+	
+	cd "$safeTmp"/vector/vector_usb_led
+	
+	pcb -x gerber --all-layers --name-style fixed --gerberfile usb_led usb_led.pcb
+	
+	local currentHash
+	currentHash=$(cat usb_led.top.gbr usb_led.topmask.gbr usb_led.toppaste.gbr usb_led.topsilk.gbr usb_led.outline.gbr usb_led.plated-drill.cnc | grep -v '^G04' | md5sum | head -c 12)
+	_messagePlain_probe "$currentHash"
+	
+	
+	
+	# DANGER ONLY add hashes from versions known to produce ALL valid outputs for ALL packages . Test completely.
+	
+	# 4.2.0
+	[[ "$currentHash" == "53771fc5b86f" ]] && return 0
+	
+	
+	_messageFAIL
+	_stop 1
+}
+
+
+
+_vector_sch_30MHzLowPass() {
+	_start
+	
+	mkdir -p "$safeTmp"/vector/30MHzLowPass
+	_instance_internal "$scriptLib"/vector/30MHzLowPass/. "$safeTmp"/vector/30MHzLowPass/
+	
+	cd "$safeTmp"/vector/30MHzLowPass
+	
+	gnetlist -g bom 30MHzLowPass.sch -o 30MHzLowPass_1.bom > /dev/null
+	gnetlist -g bom2 30MHzLowPass.sch -o 30MHzLowPass_2.bom > /dev/null
+	
+	local currentHash
+	currentHash=$(cat 30MHzLowPass_1.bom 30MHzLowPass_2.bom | md5sum | head -c 12)
+	_messagePlain_probe "$currentHash"
+	
+	
+	
+	
+	# DANGER ONLY add hashes from versions known to produce ALL valid outputs for ALL packages . Test completely.
+	
+	# 4.2.0
+	[[ "$currentHash" == "5dccdd13a79d" ]] && return 0
+	
+	
+	_messageFAIL
+	_stop 1
+}
+
+_vector_sch_vector_usb_led() {
+	_start
+	
+	mkdir -p "$safeTmp"/vector/vector_usb_led
+	_instance_internal "$scriptLib"/vector/vector_usb_led/. "$safeTmp"/vector/vector_usb_led/
+	
+	cd "$safeTmp"/vector/vector_usb_led
+	
+	gnetlist -g bom usb_led.sch -o usb_led_1.bom > /dev/null 2>&1
+	gnetlist -g bom2 usb_led.sch -o usb_led_2.bom > /dev/null 2>&1
+	
+	local currentHash
+	currentHash=$(cat usb_led_1.bom usb_led_2.bom | md5sum | head -c 12)
+	_messagePlain_probe "$currentHash"
+	
+	
+	
+	# DANGER ONLY add hashes from versions known to produce ALL valid outputs for ALL packages . Test completely.
+	
+	# 4.2.0
+	[[ "$currentHash" == "d41d8cd98f00" ]] && return 0
+	
+	
+	_messageFAIL
+	_stop 1
+}
+
+
+_vector_pcb() {
+	! "$scriptAbsoluteLocation" _vector_pcb_30MHzLowPass && _stop 1
+	! "$scriptAbsoluteLocation" _vector_pcb_vector_usb_led && _stop 1
+	return 0
+}
+_vector_sch() {
+	! "$scriptAbsoluteLocation" _vector_sch_30MHzLowPass && _stop 1
+	! "$scriptAbsoluteLocation" _vector_sch_vector_usb_led && _stop 1
+	return 0
+}
+
+
 _vector_prog() {
-	true
+	! "$scriptAbsoluteLocation" _vector_pcb && _stop 1
+	! "$scriptAbsoluteLocation" _vector_sch && _stop 1
+	return 0
 }
 
 
@@ -88,7 +213,12 @@ _test_prog() {
 	! echo \.123 | grep -E '^\$[0-9]|^\.[0-9]' > /dev/null 2>&1 && _messageFAIL && return 1
 	echo 123 | grep -E '^\$[0-9]|^\.[0-9]' > /dev/null 2>&1 && _messageFAIL && return 1
 	
+	
+	
+	
+	_messageNormal 'Vector (prog)...'
 	_vector_prog
+	_messagePASS
 	
 	return 0
 }

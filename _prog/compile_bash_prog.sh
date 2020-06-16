@@ -139,6 +139,7 @@ _compile_bash_program_prog() {
 	includeScriptList+=( core__geda___build_compile__layers_oshstencil.sh )
 	includeScriptList+=( core__geda___build_compile__layers.sh )
 	
+	includeScriptList+=( core__geda___build_compile__materials__geometry.sh )
 	includeScriptList+=( core__geda___build_compile__materials_pcbway.sh )
 	includeScriptList+=( core__geda___build_compile__materials.sh )
 	

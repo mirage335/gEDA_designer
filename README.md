@@ -175,6 +175,8 @@ https://support.jlcpcb.com/article/84-how-to-generate-the-bom-and-centroid-file-
 https://sourceforge.net/projects/eaglepcb2freecad/
 https://beta.sharecad.org/
 
+https://hackaday.com/2017/05/18/kicad-best-practises-library-management/
+
 __Copyright__
 This file is part of gEDA_designer.
 
