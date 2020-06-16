@@ -18232,17 +18232,37 @@ _geda_compile_layers() {
 
 
 
+# ATTENTION: Optional. Renames all files to use exactly repeatable naming for subsequent processing.
+# Disabled by default. In practice, any subsequent processor should only rely on pattern matching relevant parts of file names (eg. extensions).
+_package_geda_compile_materials_sch_geometry_rename() {
+	return 0
+	
+	cd "$currentSpecific_work"/package/
+	local currentFile
+	local currentFile_rename
+	for currentFile in "./"*
+	do
+		currentFile_rename=${currentFile/"$currentInput_name"/geometry}
+		mv "$currentFile" "$currentFile_rename"
+	done
+	
+	# WARNING: Not considered best practice.
+	cd "$se_in_tmp"
+}
 
 
 _package_geda_compile_materials_sch_geometry() {
 	_safeRMR "$currentSpecific_work"/package
 	mkdir -p "$currentSpecific_work"/package
+	
 	cp "$currentSpecific_work"/*.gbr "$currentSpecific_work"/package/ > /dev/null 2>&1
 	cp "$currentSpecific_work"/*.G*L "$currentSpecific_work"/package/ > /dev/null 2>&1
 	cp "$currentSpecific_work"/*.cnc "$currentSpecific_work"/package/ > /dev/null 2>&1
 	cp "$currentSpecific_work"/"$currentInput_name"-mil.xy "$currentSpecific_work"/package/ > /dev/null 2>&1
 	cp "$currentSpecific_work"/"$currentInput_name".bom "$currentSpecific_work"/package/ > /dev/null 2>&1
 	cp "$currentSpecific_work"/*.xlsx "$currentSpecific_work"/package/ > /dev/null 2>&1
+	
+	_package_geda_compile_materials_sch_geometry_rename
 }
 
 _package_geda_compile_materials_sch_geometry_write() {
@@ -18250,7 +18270,6 @@ _package_geda_compile_materials_sch_geometry_write() {
 	mkdir -p "$1"
 	_instance_internal "$currentSpecific_work"/package/. "$1"/
 }
-
 
 
 
@@ -18302,11 +18321,6 @@ _geda_compile_materials_sch_geometry_format_layers() {
 	_messagePlain_probe_var currentTotalLayer
 	_package_geda_compile_materials_sch_geometry
 	_package_geda_compile_materials_sch_geometry_write "$se_out"/geometry/"$currentInput_name"/"$currentInput_name"
-	
-	
-	cd "$currentSpecific_work"/package
-	rm -f "$se_out"/geometry/"$currentInput_name"/"$currentInput_name".zip > /dev/null 2>&1
-	#zip -r "$se_out"/geometry/"$currentInput_name"/"$currentInput_name" .
 	
 	cd "$se_in_tmp"
 }
