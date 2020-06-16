@@ -1,0 +1,19 @@
+refdes	footprint	value	description	cost	device	mfr	mfrpn	dst	dstpn	link	link_page	supplier	sbapn	kitting	kitting_d	nobom	noplace	
+CONN2	BNC_LAY	-	$1.74 MOUSER 737-RF1-01-P-00-50	unknown	BNC	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+CONN1	BNC_LAY	-	$1.74 MOUSER 737-RF1-01-P-00-50	unknown	BNC	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+L6	ACY800	400nH	Counterwound Air-Core Toroid	unknown	INDUCTOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+C7	ACY300	100pF	capacitor	unknown	CAPACITOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+L5	ACY800	400nH	Counterwound Air-Core Toroid	unknown	INDUCTOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+C6	ACY300	330pF	capacitor	unknown	CAPACITOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+R2	none	50	X SIMULATION ONLY	unknown	RESISTOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+C5	ACY300	330pF	capacitor	unknown	CAPACITOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+C4	ACY300	330pF	capacitor	unknown	CAPACITOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+L4	ACY800	400nH	Counterwound Air-Core Toroid	unknown	INDUCTOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+C3	ACY300	330pF	capacitor	unknown	CAPACITOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+L3	ACY800	400nH	Counterwound Air-Core Toroid	unknown	INDUCTOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+L2	ACY800	400nH	Counterwound Air-Core Toroid	unknown	INDUCTOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+C2	ACY300	330pF	capacitor	unknown	CAPACITOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+L1	ACY800	400nH	Counterwound Air-Core Toroid	unknown	INDUCTOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+R1	none	50	X SIMULATION ONLY	unknown	RESISTOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+V1	none	dc 0 ac 1	X SIMULATION ONLY	unknown	vac	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+C1	ACY300	100pF	capacitor	unknown	CAPACITOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	

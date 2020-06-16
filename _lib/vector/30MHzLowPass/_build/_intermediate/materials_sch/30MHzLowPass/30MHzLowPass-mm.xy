@@ -1,0 +1,16 @@
+#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side
+L6,"ACY800","500nH",Counterwound Air-Core Toroid,,INDUCTOR,,,,,,,,,,,91.44,5.08,0,top
+L5,"ACY800","500nH",Counterwound Air-Core Toroid,,INDUCTOR,,,,,,,,,,,76.20,12.70,0,top
+L3,"ACY800","500nH",Counterwound Air-Core Toroid,,INDUCTOR,,,,,,,,,,,53.34,12.70,0,top
+L1,"ACY800","500nH",Counterwound Air-Core Toroid,,INDUCTOR,,,,,,,,,,,30.48,12.70,0,top
+C1,"ACY300","100pF",capacitor,,CAPACITOR,,,,,,,,,,,20.32,6.35,90,top
+C2,"ACY300","200pF",capacitor,,CAPACITOR,,,,,,,,,,,22.86,6.35,90,top
+C6,"ACY300","200pF",capacitor,,CAPACITOR,,,,,,,,,,,78.74,6.35,90,top
+C4,"ACY300","200pF",capacitor,,CAPACITOR,,,,,,,,,,,50.80,6.35,90,top
+C3,"ACY300","200pF",capacitor,,CAPACITOR,,,,,,,,,,,48.26,6.35,90,top
+C5,"ACY300","200pF",capacitor,,CAPACITOR,,,,,,,,,,,76.20,6.35,90,top
+L4,"ACY800","500nH",Counterwound Air-Core Toroid,,INDUCTOR,,,,,,,,,,,63.50,5.08,0,top
+L2,"ACY800","500nH",Counterwound Air-Core Toroid,,INDUCTOR,,,,,,,,,,,35.56,5.08,0,top
+C7,"ACY300","100pF",capacitor,,CAPACITOR,,,,,,,,,,,104.14,6.35,90,top
+CONN1,"BNC_LAY","-",$1.74 MOUSER 737-RF1-01-P-00-50,,BNC,,,,,,,,,,,10.16,6.99,270,top
+CONN2,"BNC_LAY","-",$1.74 MOUSER 737-RF1-01-P-00-50,,BNC,,,,,,,,,,,116.84,8.26,90,top

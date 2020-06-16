@@ -1,0 +1,22 @@
+# PcbXY Version 1.0
+# Date: Tue 16 Jun 2020 07:41:50 AM GMT UTC
+# Author: commonadmin
+# Title: (unknown) - PCB X-Y
+# RefDes, Description, Value, X, Y, rotation, top/bottom
+# X,Y in mil.  rotation in degrees.
+# --------------------------------------------
+L6,"ACY800","500nH",3600.00,200.00,0,top
+L5,"ACY800","500nH",3000.00,500.00,0,top
+L3,"ACY800","500nH",2100.00,500.00,0,top
+L1,"ACY800","500nH",1200.00,500.00,0,top
+C1,"ACY300","100pF",800.00,250.00,90,top
+C2,"ACY300","200pF",900.00,250.00,90,top
+C6,"ACY300","200pF",3100.00,250.00,90,top
+C4,"ACY300","200pF",2000.00,250.00,90,top
+C3,"ACY300","200pF",1900.00,250.00,90,top
+C5,"ACY300","200pF",3000.00,250.00,90,top
+L4,"ACY800","500nH",2500.00,200.00,0,top
+L2,"ACY800","500nH",1400.00,200.00,0,top
+C7,"ACY300","100pF",4100.00,250.00,90,top
+CONN1,"BNC_LAY","-",400.00,275.00,270,top
+CONN2,"BNC_LAY","-",4600.00,325.00,90,top

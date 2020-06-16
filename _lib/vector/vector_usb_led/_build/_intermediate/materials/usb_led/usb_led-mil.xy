@@ -1,0 +1,20 @@
+# PcbXY Version 1.0
+# Date: Tue 16 Jun 2020 07:47:19 AM GMT UTC
+# Author: commonadmin
+# Title: (unknown) - PCB X-Y
+# RefDes, Description, Value, X, Y, rotation, top/bottom
+# X,Y in mil.  rotation in degrees.
+# --------------------------------------------
+C1,"0402","0.1uF",547.50,100.74,90,top
+C2,"0402","4.7uF",587.50,100.74,90,top
+R1,"0402","10k",563.24,45.00,0,top
+LED1,"0402","-",637.50,45.00,0,top
+R2,"0402","499",563.24,45.00,180,bottom
+LED2,"0402","-",637.50,45.00,180,bottom
+FID2,"fiducial","1mm",722.50,310.00,0,top
+FID1,"fiducial","1mm",622.50,410.00,0,top
+FID3,"fiducial","1mm",622.50,410.00,0,bottom
+FID4,"fiducial","1mm",722.50,310.00,0,bottom
+T2,"SparkGapPCB","2kV",627.84,314.74,270,top
+T1,"SparkGapPCB","2kV",627.84,274.74,270,top
+USB,"USB_TypeA_PCB","-",222.81,244.49,180,top

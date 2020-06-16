@@ -1,0 +1,7 @@
+refdes:footprint:value:description:cost:device:mfr:mfrpn:dst:dstpn:link:link_page:supplier:sbapn:kitting:kitting_d:nobom:noplace:qty
+USB:USB_TypeA_PCB:-:$0.00 PCB-INTEGRAL Trace based connector.:unknown:CONNECTOR_5:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:1
+C2:0402:4.7uF:$0.093 MOUSER 603-CC402MRX5R5BB475:0.093:CAPACITOR:Yageo:CC0402MRX5R5BB475:Mouser:CC0402MRX5R5BB475:www.mouser.com/ds/2/447/UPY-GPHC_X5R_4V-to-50V_14_0717-202131.pdf:4:c:unknown:tape-no-leader:unknown:unknown:unknown:1
+C1:0402:0.1uF:$0.10 MOUSER 80-C0402C104K8R:unknown:CAPACITOR:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:1
+R1:0402:10k:$0.13 MOUSER 71-TNPW040210K0DETD:unknown:RESISTOR:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:1
+R2:0402:499:$0.28 MOUSER 594-MCS0402MD4990DE0:unknown:RESISTOR:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:1
+LED1,LED2:0402:-:$0.09 MOUSER 78-VLMG1500-GS08:unknown:LED:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:unknown:2

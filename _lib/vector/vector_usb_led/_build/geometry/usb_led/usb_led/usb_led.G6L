@@ -1,0 +1,20 @@
+G04 start of page 9 for group 7 idx 7 *
+G04 Title: (unknown), spare *
+G04 Creator: pcb 4.2.0 *
+G04 CreationDate: Tue Jun 16 07:47:16 2020 UTC *
+G04 For: commonadmin *
+G04 Format: Gerber/RS-274X *
+G04 PCB-Dimensions (mil): 6000.00 5000.00 *
+G04 PCB-Coordinate-Origin: lower left *
+%MOIN*%
+%FSLAX25Y25*%
+%LNGROUP7*%
+%ADD39C,0.0100*%
+%ADD38C,0.0200*%
+G54D38*X52156Y4158D03*
+X51500Y12000D03*
+X60000Y30000D03*
+Y26000D03*
+X50500Y34000D03*
+X49000Y41500D03*
+G54D39*M02*

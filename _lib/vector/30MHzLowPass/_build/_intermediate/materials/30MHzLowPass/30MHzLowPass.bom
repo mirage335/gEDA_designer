@@ -1,0 +1,10 @@
+# PcbBOM Version 1.0
+# Date: Tue 16 Jun 2020 07:41:50 AM GMT UTC
+# Author: commonadmin
+# Title: (unknown) - PCB BOM
+# Quantity, Description, Value, RefDes, footprint, value, description, cost, device, mfr, mfrpn, dst, dstpn, link, link_page, supplier, sbapn, kitting, kitting_d, nobom, noplace
+# --------------------------------------------
+6,"ACY800","500nH",L6 L5 L3 L1 L4 L2 ,"","","","","INDUCTOR","","","","","","","","","","","",""
+2,"ACY300","100pF",C1 C7 ,"","","","","CAPACITOR","","","","","","","","","","","",""
+5,"ACY300","200pF",C2 C6 C4 C3 C5 ,"","","","","CAPACITOR","","","","","","","","","","","",""
+2,"BNC_LAY","-",CONN1 CONN2 ,"","","","","BNC","","","","","","","","","","","",""

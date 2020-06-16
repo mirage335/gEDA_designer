@@ -1,0 +1,14 @@
+# PcbBOM Version 1.0
+# Date: Tue 16 Jun 2020 07:47:19 AM GMT UTC
+# Author: commonadmin
+# Title: (unknown) - PCB BOM
+# Quantity, Description, Value, RefDes, footprint, value, description, cost, device, mfr, mfrpn, dst, dstpn, link, link_page, supplier, sbapn, kitting, kitting_d, nobom, noplace
+# --------------------------------------------
+1,"0402","0.1uF",C1 ,"","","","","CAPACITOR","","","","","","","","","","","",""
+1,"0402","4.7uF",C2 ,"","","","","CAPACITOR","","","","","","","","","","","",""
+1,"0402","10k",R1 ,"","","","","RESISTOR","","","","","","","","","","","",""
+2,"0402","-",LED1 LED2 ,"","","","","LED","","","","","","","","","","","",""
+1,"0402","499",R2 ,"","","","","RESISTOR","","","","","","","","","","","",""
+4,"fiducial","1mm",FID2 FID1 FID3 FID4 ,"","","Fiducial","","FIDUCIAL","","","","","","","","","","","",""
+2,"SparkGapPCB","2kV",T2 T1 ,"","","","","SparkGap","","","","","","","","","","","",""
+1,"USB_TypeA_PCB","-",USB ,"","","","","CONNECTOR_5","","","","","","","","","","","",""

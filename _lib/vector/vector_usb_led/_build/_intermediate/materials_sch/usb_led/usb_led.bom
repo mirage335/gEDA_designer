@@ -1,0 +1,14 @@
+refdes	footprint	value	description	cost	device	mfr	mfrpn	dst	dstpn	link	link_page	supplier	sbapn	kitting	kitting_d	nobom	noplace	
+LED2	0402	-	$0.09 MOUSER 78-VLMG1500-GS08	unknown	LED	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+R2	0402	499	$0.28 MOUSER 594-MCS0402MD4990DE0	unknown	RESISTOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+LED1	0402	-	$0.09 MOUSER 78-VLMG1500-GS08	unknown	LED	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+R1	0402	10k	$0.13 MOUSER 71-TNPW040210K0DETD	unknown	RESISTOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+T1	SparkGapPCB	2kV	-	unknown	SparkGap	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	true	true	
+C1	0402	0.1uF	$0.10 MOUSER 80-C0402C104K8R	unknown	CAPACITOR	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	
+C2	0402	4.7uF	$0.093 MOUSER 603-CC402MRX5R5BB475	0.093	CAPACITOR	Yageo	CC0402MRX5R5BB475	Mouser	CC0402MRX5R5BB475	www.mouser.com/ds/2/447/UPY-GPHC_X5R_4V-to-50V_14_0717-202131.pdf	4	c	unknown	tape-no-leader	unknown	unknown	unknown	
+T2	SparkGapPCB	2kV	-	unknown	SparkGap	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	true	true	
+FID2	fiducial	1mm	Fiducial	unknown	FIDUCIAL	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	true	unknown	
+FID1	fiducial	1mm	Fiducial	unknown	FIDUCIAL	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	true	unknown	
+FID3	fiducial	1mm	Fiducial	unknown	FIDUCIAL	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	true	unknown	
+FID4	fiducial	1mm	Fiducial	unknown	FIDUCIAL	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	true	unknown	
+USB	USB_TypeA_PCB	-	$0.00 PCB-INTEGRAL Trace based connector.	unknown	CONNECTOR_5	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	unknown	

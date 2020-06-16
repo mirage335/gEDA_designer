@@ -43,6 +43,7 @@ CZXWXcRMTo8EmM8i4d
 		_messagePlain_nominal '_scope_attach: prog: deploy'
 		
 		#_scope_command_write _true
+		_scope_command_write _gEDA_designer_geometry
 	}
 
 

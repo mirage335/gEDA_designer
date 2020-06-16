@@ -144,6 +144,18 @@ Optional programs used for autorouting (automatic wiring of PCB traces) include 
 
 # Safety
 
+# Future Work
+*) A 'gerberProjectTemplate' file may become necessary. Example provided as '_lib/zOBSOLETE-gedaProduction/assembler/gerberProjectTemplate' .
+
+
+
+# Diagnostic
+
+
+
+# Certification
+
+
 
 
 

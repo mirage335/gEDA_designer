@@ -1,0 +1,12 @@
+#refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,Xpos,Ypos,rot,side
+C1,"0402","0.1uF",$0.10 MOUSER 80-C0402C104K8R,,CAPACITOR,,,,,,,,,,,0.55,0.10,90,top
+C2,"0402","4.7uF",$0.093 MOUSER 603-CC402MRX5R5BB475,0.093,CAPACITOR,Yageo,CC0402MRX5R5BB475,Mouser,CC0402MRX5R5BB475,www.mouser.com/ds/2/447/UPY-GPHC_X5R_4V-to-50V_14_0717-202131.pdf,4,c,,tape-no-leader,,0.59,0.10,90,top
+R1,"0402","10k",$0.13 MOUSER 71-TNPW040210K0DETD,,RESISTOR,,,,,,,,,,,0.56,0.04,0,top
+LED1,"0402","-",$0.09 MOUSER 78-VLMG1500-GS08,,LED,,,,,,,,,,,0.64,0.04,0,top
+R2,"0402","499",$0.28 MOUSER 594-MCS0402MD4990DE0,,RESISTOR,,,,,,,,,,,0.56,0.04,180,bottom
+LED2,"0402","-",$0.09 MOUSER 78-VLMG1500-GS08,,LED,,,,,,,,,,,0.64,0.04,180,bottom
+FID2,"fiducial","1mm",Fiducial,,FIDUCIAL,,,,,,,,,,,0.72,0.31,0,top
+FID1,"fiducial","1mm",Fiducial,,FIDUCIAL,,,,,,,,,,,0.62,0.41,0,top
+FID3,"fiducial","1mm",Fiducial,,FIDUCIAL,,,,,,,,,,,0.62,0.41,0,bottom
+FID4,"fiducial","1mm",Fiducial,,FIDUCIAL,,,,,,,,,,,0.72,0.31,0,bottom
+USB,"USB_TypeA_PCB","-",$0.00 PCB-INTEGRAL Trace based connector.,,CONNECTOR_5,,,,,,,,,,,0.22,0.24,180,top

@@ -1,0 +1,7 @@
+refdes,footprint,value,description,cost,device,mfr,mfrpn,dst,dstpn,link,link_page,supplier,sbapn,kitting,kitting_d,nobom,noplace,qty
+V1,none,dc 0 ac 1,X SIMULATION ONLY,,vac,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,1
+R1;R2,none,50,X SIMULATION ONLY,,RESISTOR,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,2
+C2;C3;C4;C5;C6,ACY300,330pF,capacitor,,CAPACITOR,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,5
+C1;C7,ACY300,100pF,capacitor,,CAPACITOR,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,2
+L1;L2;L3;L4;L5;L6,ACY800,400nH,Counterwound Air-Core Toroid,,INDUCTOR,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,6
+CONN1;CONN2,BNC_LAY,-,$1.74 MOUSER 737-RF1-01-P-00-50,$1.74,BNC,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,unknown,2
