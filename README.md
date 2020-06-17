@@ -189,6 +189,12 @@ https://beta.sharecad.org/
 
 https://hackaday.com/2017/05/18/kicad-best-practises-library-management/
 
+
+https://wiki.evilmadscientist.com/GEDA_Resources
+https://github.com/erichVK5/translate2geda
+https://github.com/erichVK5/inkscape2pcb
+
+
 __Copyright__
 This file is part of gEDA_designer.
 
