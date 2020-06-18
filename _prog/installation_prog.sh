@@ -1,6 +1,7 @@
 
 
 _vector_pcb_30MHzLowPass() {
+	_messagePlain_nominal 'init: _vector_pcb_30MHzLowPass'
 	_start
 	
 	mkdir -p "$safeTmp"/vector/30MHzLowPass
@@ -27,6 +28,7 @@ _vector_pcb_30MHzLowPass() {
 }
 
 _vector_pcb_vector_usb_led() {
+	_messagePlain_nominal 'init: _vector_pcb_vector_usb_led'
 	_start
 	
 	mkdir -p "$safeTmp"/vector/vector_usb_led
@@ -48,6 +50,40 @@ _vector_pcb_vector_usb_led() {
 	[[ "$currentHash" == "53771fc5b86f" ]] && return 0
 	
 	
+	
+	_messageFAIL
+	_stop 1
+}
+
+
+_vector_pcb_vector_usb_led_bom() {
+	_messagePlain_nominal 'init: _vector_pcb_vector_usb_led_bom'
+	_start
+	
+	mkdir -p "$safeTmp"/vector/vector_usb_led
+	_instance_internal "$scriptLib"/vector/vector_usb_led/. "$safeTmp"/vector/vector_usb_led/
+	
+	cd "$safeTmp"/vector/vector_usb_led
+	
+	pcb -x bom --attrs attribs --bomfile usb_led.bom usb_led.pcb > /dev/null 2>&1
+	pcb -x bom --attrs attribs --xy-unit mil --xyfile usb_led-mil.xy usb_led.pcb > /dev/null 2>&1
+	pcb -x bom --attrs attribs --xy-unit in --xyfile usb_led-in.xy usb_led.pcb > /dev/null 2>&1
+	pcb -x bom --attrs attribs --xy-unit mm --xyfile usb_led-mm.xy usb_led.pcb > /dev/null 2>&1
+	
+	local currentHash
+	currentHash=$(cat usb_led.bom usb_led-mil.xy usb_led-in.xy usb_led-mm.xy | grep -v '^#' | md5sum | head -c 12)
+	_messagePlain_probe "$currentHash"
+	
+	
+	
+	# DANGER ONLY add hashes from versions known to produce ALL valid outputs for ALL packages . Test completely.
+	
+	# 4.2.0
+	[[ "$currentHash" == "765b5220dbbf" ]] && return 0
+	
+	
+	
+	
 	_messageFAIL
 	_stop 1
 }
@@ -55,6 +91,7 @@ _vector_pcb_vector_usb_led() {
 
 
 _vector_sch_30MHzLowPass() {
+	_messagePlain_nominal 'init: _vector_sch_30MHzLowPass'
 	_start
 	
 	mkdir -p "$safeTmp"/vector/30MHzLowPass
@@ -83,6 +120,7 @@ _vector_sch_30MHzLowPass() {
 }
 
 _vector_sch_vector_usb_led() {
+	_messagePlain_nominal 'init: _vector_sch_vector_usb_led'
 	_start
 	
 	mkdir -p "$safeTmp"/vector/vector_usb_led
@@ -102,7 +140,7 @@ _vector_sch_vector_usb_led() {
 	# DANGER ONLY add hashes from versions known to produce ALL valid outputs for ALL packages . Test completely.
 	
 	# 4.2.0
-	[[ "$currentHash" == "d41d8cd98f00" ]] && return 0
+	[[ "$currentHash" == "f24aede33154" ]] && return 0
 	
 	
 	_messageFAIL
@@ -113,6 +151,7 @@ _vector_sch_vector_usb_led() {
 _vector_pcb() {
 	! "$scriptAbsoluteLocation" _vector_pcb_30MHzLowPass && _stop 1
 	! "$scriptAbsoluteLocation" _vector_pcb_vector_usb_led && _stop 1
+	! "$scriptAbsoluteLocation" _vector_pcb_vector_usb_led_bom && _stop 1
 	return 0
 }
 _vector_sch() {
