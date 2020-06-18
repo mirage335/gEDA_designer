@@ -16678,8 +16678,6 @@ _vector_pcb_vector_usb_led_bom() {
 	currentHash=$(cat usb_led.bom usb_led-mil.xy usb_led-in.xy usb_led-mm.xy | grep -v '^#' | md5sum | head -c 12)
 	_messagePlain_probe "$currentHash"
 	
-	sleep 45
-	
 	
 	
 	# DANGER ONLY add hashes from versions known to produce ALL valid outputs for ALL packages . Test completely.
