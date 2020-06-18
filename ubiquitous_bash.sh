@@ -2841,6 +2841,15 @@ _detect_x11() {
 	return 1
 }
 
+_typeShare() {
+	_typeDep "$1" && return 0
+	
+	[[ -e /usr/share/"$1" ]] && ! [[ -d /usr/share/"$1" ]] && return 0
+	[[ -e /usr/local/share/"$1" ]] && ! [[ -d /usr/local/share/"$1" ]] && return 0
+	
+	return 1
+}
+
 _typeDep() {
 	
 	# WARNING: Allows specification of entire path from root. *Strongly* prefer use of subpath matching, for increased portability.
@@ -16793,6 +16802,19 @@ _test_prog() {
 	
 	
 	_test_prog_imagemagick_limit
+	
+	
+	
+	if ! _typeShare inkscape/extensions/geda_pcb_output.py
+	then
+		_messagePlain_warn 'warn: inkscape: extension: missing geda fp export'
+		_messagePlain_request 'request: install from '"'"_lib/optional"'"' '
+	fi
+	
+	if ! _typeDep translate2geda && ! _typeDep _translate2geda
+	then
+		_messagePlain_probe 'warn: not found: translate2geda - Optional end user tool. Consider install from '"'"_lib/optional"'"' if desired to convert gerbers or similar to gEDA footprint.'
+	fi
 	
 	
 	

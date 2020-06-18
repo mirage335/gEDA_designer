@@ -201,6 +201,19 @@ _test_prog() {
 	
 	
 	
+	if ! _typeShare inkscape/extensions/geda_pcb_output.py
+	then
+		_messagePlain_warn 'warn: inkscape: extension: missing geda fp export'
+		_messagePlain_request 'request: install from '"'"_lib/optional"'"' '
+	fi
+	
+	if ! _typeDep translate2geda && ! _typeDep _translate2geda
+	then
+		_messagePlain_probe 'warn: not found: translate2geda - Optional end user tool. Consider install from '"'"_lib/optional"'"' if desired to convert gerbers or similar to gEDA footprint.'
+	fi
+	
+	
+	
 	_getDep libreoffice
 	
 	
