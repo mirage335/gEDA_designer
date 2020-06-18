@@ -17785,6 +17785,7 @@ _geda_compile_layers_cad() {
 	#currentDPI="1200"
 	currentDPI="1270"
 	
+	# DANGER: Although some SVG file inputs default to 72dpi or 96dpi, this is not explicit and must not be depended upon. Always verify imported SVG dimensions!
 	local currentDPI_svg
 	#currentDPI_svg=96
 	currentDPI_svg=72
@@ -17795,6 +17796,7 @@ _geda_compile_layers_cad() {
 	mkdir -p "$currentSpecific_work_cad"
 	
 	echo "$currentDPI"x"$currentDPI" > "$currentSpecific_work_cad"/dpi.txt
+	echo "$currentDPI_svg"x"$currentDPI_svg" > "$currentSpecific_work_cad"/dpi_svg.txt
 	
 	
 	gerbv --units=mil -D"$currentDPI_svg"x"$currentDPI_svg" -b \#FFFFFF --export svg --output "$currentSpecific_work_cad"/dimension_top_copper.svg "$intermediate_layers"/"$currentInput_name".topsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".topmask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr "$intermediate_layers"/"$currentInput_name".top.gbr
