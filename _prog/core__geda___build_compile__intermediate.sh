@@ -2,6 +2,7 @@
 
 # ATTENTION: Overload with ops (including sketch ops) to FORCE incomplete build attempt.
 # DANGER: Incomplete build attempt ability has not been adequately developed and tested. Forcing this may (however unlikely) be able to cause damage (ie. inappropraite rm) to the host system.
+# CAUTION: Does not ensure underlying project is valid. Incorrect BOM data will be reflected in outputs. Missing 'gafrc' and similar files may result in empty 'bom' files.
 _check_geda_intermediate_all() {
 	[[ "$intermediate_layers" == "" ]] && _stop 1
 	[[ ! -e "$intermediate_layers" ]] && _stop 1

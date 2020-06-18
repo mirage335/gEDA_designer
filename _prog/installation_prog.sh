@@ -180,7 +180,7 @@ _test_prog() {
 	
 	
 	
-	_getDep inkscape
+	_wantGetDep inkscape
 	
 	
 	_getDep pstoedit
@@ -198,6 +198,9 @@ _test_prog() {
 	
 	
 	_test_prog_imagemagick_limit
+	
+	
+	_getDep gs
 	
 	
 	

@@ -43,7 +43,9 @@ _reset_geda_sketchDir() {
 
 _validate_geda_sketchDir_buildOut() {
 	find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' | _condition_lines_zero && return 1
-	find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero && return 1
+	
+	# WARNING: Allows possible failures if ".sch" file is expected and not checked for.
+	#find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero && return 1
 	
 	return 0
 }

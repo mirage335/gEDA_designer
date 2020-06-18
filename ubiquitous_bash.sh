@@ -1366,7 +1366,7 @@ _instance_internal() {
 	! [[ -d "$1" ]] && return 1
 	! [[ -e "$2" ]] && return 1
 	! [[ -d "$2" ]] && return 1
-	rsync -q -ax --exclude "/.cache" --exclude "/.git" "$@"
+	rsync -q -ax --exclude "/.cache" --exclude "/.git" --exclude ".git" "$@"
 }
 
 #echo -n
@@ -16784,7 +16784,7 @@ _test_prog() {
 	
 	
 	
-	_getDep inkscape
+	_wantGetDep inkscape
 	
 	
 	_getDep pstoedit
@@ -16802,6 +16802,9 @@ _test_prog() {
 	
 	
 	_test_prog_imagemagick_limit
+	
+	
+	_getDep gs
 	
 	
 	
@@ -17185,6 +17188,7 @@ _geda_compile_intermediate_materials_sch_comprehensive() {
 
 # ATTENTION: Overload with ops (including sketch ops) to FORCE incomplete build attempt.
 # DANGER: Incomplete build attempt ability has not been adequately developed and tested. Forcing this may (however unlikely) be able to cause damage (ie. inappropraite rm) to the host system.
+# CAUTION: Does not ensure underlying project is valid. Incorrect BOM data will be reflected in outputs. Missing 'gafrc' and similar files may result in empty 'bom' files.
 _check_geda_intermediate_all() {
 	[[ "$intermediate_layers" == "" ]] && _stop 1
 	[[ ! -e "$intermediate_layers" ]] && _stop 1
@@ -17384,7 +17388,9 @@ _reset_geda_sketchDir() {
 
 _validate_geda_sketchDir_buildOut() {
 	find "$se_sketchDir" -maxdepth 1 -type f -name '*.pcb' | _condition_lines_zero && return 1
-	find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero && return 1
+	
+	# WARNING: Allows possible failures if ".sch" file is expected and not checked for.
+	#find "$se_sketchDir" -maxdepth 1 -type f -name '*.sch' | _condition_lines_zero && return 1
 	
 	return 0
 }
@@ -17779,44 +17785,64 @@ _geda_compile_layers_cad() {
 	#currentDPI="1200"
 	currentDPI="1270"
 	
+	local currentDPI_svg
+	#currentDPI_svg=96
+	currentDPI_svg=72
+	
 	#"$currentSpecific_work_cad"/
 	local currentSpecific_work_cad
 	currentSpecific_work_cad="$safeTmp"/_specific/cad/"$currentInput_name"
 	mkdir -p "$currentSpecific_work_cad"
 	
+	echo "$currentDPI"x"$currentDPI" > "$currentSpecific_work_cad"/dpi.txt
 	
 	
-	gerbv -b \#FFFFFF --export svg --output "$currentSpecific_work_cad"/combined.svg "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".outline.gbr
+	gerbv --units=mil -D"$currentDPI_svg"x"$currentDPI_svg" -b \#FFFFFF --export svg --output "$currentSpecific_work_cad"/dimension_top_copper.svg "$intermediate_layers"/"$currentInput_name".topsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".topmask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr "$intermediate_layers"/"$currentInput_name".top.gbr
+	
+	gerbv --units=mil -D"$currentDPI_svg"x"$currentDPI_svg" -b \#FFFFFF --export svg --output "$currentSpecific_work_cad"/dimension_top.svg "$intermediate_layers"/"$currentInput_name".topsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".topmask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr
+	
+	
+	gerbv --units=mil -D"$currentDPI_svg"x"$currentDPI_svg" -b \#FFFFFF --export svg --output "$currentSpecific_work_cad"/dimension_bottom_copper.svg "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".bottommask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr "$intermediate_layers"/"$currentInput_name".bottom.gbr
+	
+	gerbv --units=mil -D"$currentDPI_svg"x"$currentDPI_svg" -b \#FFFFFF --export svg --output "$currentSpecific_work_cad"/dimension_bottom.svg "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".bottommask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr
+	
+	
+	
+	
+	
+	gerbv --units=mil -D"$currentDPI_svg"x"$currentDPI_svg" -b \#FFFFFF --export svg --output "$currentSpecific_work_cad"/combined.svg "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".outline.gbr
 	
 	#Inches. Circles will be approximate
-	#inkscape -E "$currentSpecific_work_cad"/combined_direct.dxf "$currentSpecific_work_cad"/combined.svg
-	inkscape -E "$currentSpecific_work_cad"/combined.eps "$currentSpecific_work_cad"/combined.svg
+	#inkscape --export-dpi="$currentDPI_svg" -E "$currentSpecific_work_cad"/combined_direct.dxf "$currentSpecific_work_cad"/combined.svg
+	#inkscape --export-dpi="$currentDPI_svg" -E "$currentSpecific_work_cad"/combined.eps "$currentSpecific_work_cad"/combined.svg
+	convert -units PixelsPerInch -density "$currentDPI_svg"x"$currentDPI_svg" "$currentSpecific_work_cad"/combined.svg "$currentSpecific_work_cad"/combined.eps
+	
 	
 	# CAUTION: DXF export is considered unreliable. Prefer SVG.
-	pstoedit -dt -f dxf "$currentSpecific_work_cad"/combined.eps "$currentSpecific_work_cad"/combined.dxf
+	pstoedit -psarg '-r'"$currentDPI_svg"x"$currentDPI_svg" -dt -f dxf "$currentSpecific_work_cad"/combined.eps "$currentSpecific_work_cad"/combined.dxf
 	
 	
 	
-	gerbv -b \#cccccc --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Top_Copper.png -f \#00000000 -b \#cccccc "$intermediate_layers"/"$currentInput_name".topmask.gbr -f \#ccccccFF "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#B18883FF "$intermediate_layers"/"$currentInput_name".top.gbr -f \#FFFFFFFF "$intermediate_layers"/"$currentInput_name".topsilk.gbr -f \#000000FF "$intermediate_layers"/"$currentInput_name".outline.gbr
-	gerbv -b \#cccccc --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Top_Mask.png -f \#ccccccFF -b \#102c10 "$intermediate_layers"/"$currentInput_name".topmask.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#00000000 "$intermediate_layers"/"$currentInput_name".top.gbr -f \#FFFFFFFF "$intermediate_layers"/"$currentInput_name".topsilk.gbr -f \#ccccccFF "$intermediate_layers"/"$currentInput_name".outline.gbr
-	gerbv -a -b \#FFFFFF --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Top_Outline.png -f \#00000000 "$intermediate_layers"/"$currentInput_name".topmask.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#00000000 "$intermediate_layers"/"$currentInput_name".top.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".topsilk.gbr -f \#000000FF "$intermediate_layers"/"$currentInput_name".outline.gbr
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Copper.png -transparent \#cccccc "$currentSpecific_work_cad"/Top_Copper.png
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Mask.png -transparent \#cccccc "$currentSpecific_work_cad"/Top_Mask.png
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Outline.png -transparent \#cccccc "$currentSpecific_work_cad"/Top_Outline.png
+	gerbv --units=mil -D"$currentDPI"x"$currentDPI" -b \#cccccc --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Top_Copper.png -f \#00000000 -b \#cccccc "$intermediate_layers"/"$currentInput_name".topmask.gbr -f \#ccccccFF "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#B18883FF "$intermediate_layers"/"$currentInput_name".top.gbr -f \#FFFFFFFF "$intermediate_layers"/"$currentInput_name".topsilk.gbr -f \#000000FF "$intermediate_layers"/"$currentInput_name".outline.gbr
+	gerbv --units=mil -D"$currentDPI"x"$currentDPI" -b \#cccccc --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Top_Mask.png -f \#ccccccFF -b \#102c10 "$intermediate_layers"/"$currentInput_name".topmask.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#00000000 "$intermediate_layers"/"$currentInput_name".top.gbr -f \#FFFFFFFF "$intermediate_layers"/"$currentInput_name".topsilk.gbr -f \#ccccccFF "$intermediate_layers"/"$currentInput_name".outline.gbr
+	gerbv --units=mil -D"$currentDPI"x"$currentDPI" -a -b \#FFFFFF --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Top_Outline.png -f \#00000000 "$intermediate_layers"/"$currentInput_name".topmask.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#00000000 "$intermediate_layers"/"$currentInput_name".top.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".topsilk.gbr -f \#000000FF "$intermediate_layers"/"$currentInput_name".outline.gbr
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Top_Copper.png -transparent \#cccccc "$currentSpecific_work_cad"/Top_Copper.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Top_Mask.png -transparent \#cccccc "$currentSpecific_work_cad"/Top_Mask.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Top_Outline.png -transparent \#cccccc "$currentSpecific_work_cad"/Top_Outline.png
 	
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Outline.png -bordercolor white -border 1x1 -alpha set -channel RGBA -fuzz 10% -fill none -floodfill +0+0 white -shave 1x1 "$currentSpecific_work_cad"/Top_Outline.png
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Outline.png -fuzz 100% -fill \#0a1a0a -opaque white "$currentSpecific_work_cad"/Top_BG.png
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Outline.png -channel a -negate +channel -fill \#cccccc -colorize 100% "$currentSpecific_work_cad"/Top_Outline.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Top_Outline.png -bordercolor white -border 1x1 -alpha set -channel RGBA -fuzz 10% -fill none -floodfill +0+0 white -shave 1x1 "$currentSpecific_work_cad"/Top_Outline.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Top_Outline.png -fuzz 100% -fill \#0a1a0a -opaque white "$currentSpecific_work_cad"/Top_BG.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Top_Outline.png -channel a -negate +channel -fill \#cccccc -colorize 100% "$currentSpecific_work_cad"/Top_Outline.png
 	
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Mask.png -channel rgba -matte -fill "rgba(16,44,16,0.8)" -opaque \#102c10 "$currentSpecific_work_cad"/Top_Mask.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Top_Mask.png -channel rgba -matte -fill "rgba(16,44,16,0.8)" -opaque \#102c10 "$currentSpecific_work_cad"/Top_Mask.png
 	
-	_imagemagick_limit_command composite "$currentSpecific_work_cad"/Top_Outline.png "$currentSpecific_work_cad"/Top_Mask.png "$currentSpecific_work_cad"/Top_Mask_Real.png
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top_Mask_Real.png -transparent \#cccccc "$currentSpecific_work_cad"/Top_Mask_Real.png
+	_imagemagick_limit_command composite -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Top_Outline.png "$currentSpecific_work_cad"/Top_Mask.png "$currentSpecific_work_cad"/Top_Mask_Real.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Top_Mask_Real.png -transparent \#cccccc "$currentSpecific_work_cad"/Top_Mask_Real.png
 	
-	_imagemagick_limit_command composite "$currentSpecific_work_cad"/Top_Mask_Real.png "$currentSpecific_work_cad"/Top_Copper.png "$currentSpecific_work_cad"/Top_All.png
-	_imagemagick_limit_command composite "$currentSpecific_work_cad"/Top_All.png "$currentSpecific_work_cad"/Top_BG.png "$currentSpecific_work_cad"/Top.png
+	_imagemagick_limit_command composite -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Top_Mask_Real.png "$currentSpecific_work_cad"/Top_Copper.png "$currentSpecific_work_cad"/Top_All.png
+	_imagemagick_limit_command composite -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Top_All.png "$currentSpecific_work_cad"/Top_BG.png "$currentSpecific_work_cad"/Top.png
 	
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Top.png -background "#cccccc" -flatten "$currentSpecific_work_cad"/Top.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Top.png -background "#cccccc" -flatten "$currentSpecific_work_cad"/Top.png
 	
 	mv "$currentSpecific_work_cad"/Top.png "$currentSpecific_work_cad"/RenderTop.png
 	#rm "$currentSpecific_work_cad"/Top*.png
@@ -17824,34 +17850,38 @@ _geda_compile_layers_cad() {
 	
 	
 	
-	gerbv -b \#cccccc --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Bottom_Copper.png -f \#00000000 -b \#cccccc "$intermediate_layers"/"$currentInput_name".bottommask.gbr -f \#ccccccFF "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#B18883FF "$intermediate_layers"/"$currentInput_name".bottom.gbr -f \#FFFFFFFF "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr -f \#000000FF "$intermediate_layers"/"$currentInput_name".outline.gbr
-	gerbv -b \#cccccc --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Bottom_Mask.png -f \#ccccccFF -b \#102c10 "$intermediate_layers"/"$currentInput_name".bottommask.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#00000000 "$intermediate_layers"/"$currentInput_name".bottom.gbr -f \#FFFFFFFF "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr -f \#ccccccFF "$intermediate_layers"/"$currentInput_name".outline.gbr
-	gerbv -a -b \#FFFFFF --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Bottom_Outline.png -f \#00000000 "$intermediate_layers"/"$currentInput_name".bottommask.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#00000000 "$intermediate_layers"/"$currentInput_name".bottom.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr -f \#000000FF "$intermediate_layers"/"$currentInput_name".outline.gbr
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Copper.png +flop -transparent \#cccccc "$currentSpecific_work_cad"/Bottom_Copper.png
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Mask.png +flop -transparent \#cccccc "$currentSpecific_work_cad"/Bottom_Mask.png
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Outline.png +flop -transparent \#cccccc "$currentSpecific_work_cad"/Bottom_Outline.png
+	gerbv --units=mil -D"$currentDPI"x"$currentDPI" -b \#cccccc --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Bottom_Copper.png -f \#00000000 -b \#cccccc "$intermediate_layers"/"$currentInput_name".bottommask.gbr -f \#ccccccFF "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#B18883FF "$intermediate_layers"/"$currentInput_name".bottom.gbr -f \#FFFFFFFF "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr -f \#000000FF "$intermediate_layers"/"$currentInput_name".outline.gbr
+	gerbv --units=mil -D"$currentDPI"x"$currentDPI" -b \#cccccc --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Bottom_Mask.png -f \#ccccccFF -b \#102c10 "$intermediate_layers"/"$currentInput_name".bottommask.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#00000000 "$intermediate_layers"/"$currentInput_name".bottom.gbr -f \#FFFFFFFF "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr -f \#ccccccFF "$intermediate_layers"/"$currentInput_name".outline.gbr
+	gerbv --units=mil -D"$currentDPI"x"$currentDPI" -a -b \#FFFFFF --export png --dpi "$currentDPI"x"$currentDPI" --output "$currentSpecific_work_cad"/Bottom_Outline.png -f \#00000000 "$intermediate_layers"/"$currentInput_name".bottommask.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".plated-drill.cnc -f \#00000000 "$intermediate_layers"/"$currentInput_name".bottom.gbr -f \#00000000 "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr -f \#000000FF "$intermediate_layers"/"$currentInput_name".outline.gbr
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Bottom_Copper.png +flop -transparent \#cccccc "$currentSpecific_work_cad"/Bottom_Copper.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Bottom_Mask.png +flop -transparent \#cccccc "$currentSpecific_work_cad"/Bottom_Mask.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Bottom_Outline.png +flop -transparent \#cccccc "$currentSpecific_work_cad"/Bottom_Outline.png
 	
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Outline.png -bordercolor white -border 1x1 -alpha set -channel RGBA -fuzz 10% -fill none -floodfill +0+0 white -shave 1x1 "$currentSpecific_work_cad"/Bottom_Outline.png
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Outline.png -fuzz 100% -fill \#0a1a0a -opaque white "$currentSpecific_work_cad"/Bottom_BG.png
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Outline.png -channel a -negate +channel -fill \#cccccc -colorize 100% "$currentSpecific_work_cad"/Bottom_Outline.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Bottom_Outline.png -bordercolor white -border 1x1 -alpha set -channel RGBA -fuzz 10% -fill none -floodfill +0+0 white -shave 1x1 "$currentSpecific_work_cad"/Bottom_Outline.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Bottom_Outline.png -fuzz 100% -fill \#0a1a0a -opaque white "$currentSpecific_work_cad"/Bottom_BG.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Bottom_Outline.png -channel a -negate +channel -fill \#cccccc -colorize 100% "$currentSpecific_work_cad"/Bottom_Outline.png
 	
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Mask.png -channel rgba -matte -fill "rgba(16,44,16,0.8)" -opaque \#102c10 "$currentSpecific_work_cad"/Bottom_Mask.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Bottom_Mask.png -channel rgba -matte -fill "rgba(16,44,16,0.8)" -opaque \#102c10 "$currentSpecific_work_cad"/Bottom_Mask.png
 	
-	_imagemagick_limit_command composite "$currentSpecific_work_cad"/Bottom_Outline.png "$currentSpecific_work_cad"/Bottom_Mask.png "$currentSpecific_work_cad"/Bottom_Mask_Real.png
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom_Mask_Real.png -transparent \#cccccc "$currentSpecific_work_cad"/Bottom_Mask_Real.png
+	_imagemagick_limit_command composite -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Bottom_Outline.png "$currentSpecific_work_cad"/Bottom_Mask.png "$currentSpecific_work_cad"/Bottom_Mask_Real.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Bottom_Mask_Real.png -transparent \#cccccc "$currentSpecific_work_cad"/Bottom_Mask_Real.png
 	
-	_imagemagick_limit_command composite "$currentSpecific_work_cad"/Bottom_Mask_Real.png "$currentSpecific_work_cad"/Bottom_Copper.png "$currentSpecific_work_cad"/Bottom_All.png
-	_imagemagick_limit_command composite "$currentSpecific_work_cad"/Bottom_All.png "$currentSpecific_work_cad"/Bottom_BG.png "$currentSpecific_work_cad"/Bottom.png
+	_imagemagick_limit_command composite -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Bottom_Mask_Real.png "$currentSpecific_work_cad"/Bottom_Copper.png "$currentSpecific_work_cad"/Bottom_All.png
+	_imagemagick_limit_command composite -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Bottom_All.png "$currentSpecific_work_cad"/Bottom_BG.png "$currentSpecific_work_cad"/Bottom.png
 	
-	_imagemagick_limit_command convert "$currentSpecific_work_cad"/Bottom.png -background "#cccccc" -flatten "$currentSpecific_work_cad"/Bottom.png
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/Bottom.png -background "#cccccc" -flatten "$currentSpecific_work_cad"/Bottom.png
 	
 	mv "$currentSpecific_work_cad"/Bottom.png "$currentSpecific_work_cad"/RenderBottom.png
 	#rm "$currentSpecific_work_cad"/Bottom*.png
 	
 	
-	_imagemagick_limit_command convert -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/RenderTop.png "$currentSpecific_work_cad"/RenderTop.pdf
-	_imagemagick_limit_command convert -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/RenderBottom.png "$currentSpecific_work_cad"/RenderBottom.pdf
-	_imagemagick_limit_command montage -density "$currentDPI"x"$currentDPI" -mode concatenate -bordercolor \#000000 -border 4 -geometry '+300+300' "$currentSpecific_work_cad"/RenderTop.png "$currentSpecific_work_cad"/RenderBottom.png "$currentSpecific_work_cad"/Model.pdf
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/RenderTop.png "$currentSpecific_work_cad"/RenderTop.pdf
+	_imagemagick_limit_command convert -units PixelsPerInch -density "$currentDPI"x"$currentDPI" "$currentSpecific_work_cad"/RenderBottom.png "$currentSpecific_work_cad"/RenderBottom.pdf
+	_imagemagick_limit_command montage -units PixelsPerInch -density "$currentDPI"x"$currentDPI" -mode concatenate -bordercolor \#000000 -border 4 -geometry '+300+300' "$currentSpecific_work_cad"/RenderTop.png "$currentSpecific_work_cad"/RenderBottom.png "$currentSpecific_work_cad"/Model.pdf
+	
+	# DANGER: Slim but significant possibility output may be of lower than original resolution.
+	gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -r"$currentDPI"x"$currentDPI" -dNOPAUSE -dQUIET -dBATCH -sOutputFile="$currentSpecific_work_cad"/Model_compressed.pdf "$currentSpecific_work_cad"/Model.pdf
+	mv "$currentSpecific_work_cad"/Model_compressed.pdf "$currentSpecific_work_cad"/Model.pdf
 	
 	
 	mkdir -p "$se_out"/cad/"$currentInput_name"/
