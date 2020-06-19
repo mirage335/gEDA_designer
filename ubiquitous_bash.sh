@@ -16651,7 +16651,7 @@ _vector_pcb_vector_usb_led() {
 	# DANGER ONLY add hashes from versions known to produce ALL valid outputs for ALL packages . Test completely.
 	
 	# 4.2.0
-	[[ "$currentHash" == "53771fc5b86f" ]] && return 0
+	[[ "$currentHash" == "c80fd39dc332" ]] && return 0
 	
 	
 	
