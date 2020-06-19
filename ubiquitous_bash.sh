@@ -16853,9 +16853,12 @@ _test_prog() {
 		_messagePlain_request 'request: install from '"'"_lib/optional"'"' '
 	fi
 	
-	if ! _typeDep translate2geda && ! _typeDep _translate2geda
+	# CAUTION: While it is allowed by default to proceed without '_translate2geda', doing so will result in geometry lacking a footprint output.
+	#if ! _typeDep translate2geda && ! _typeDep _translate2geda
+	if ! _typeDep _translate2geda
 	then
-		_messagePlain_probe 'warn: not found: translate2geda - Optional end user tool. Consider install from '"'"_lib/optional"'"' if desired to convert gerbers or similar to gEDA footprint.'
+		_messagePlain_bad 'warn: missing: _translate2geda - Unable to create dimension foorprints.'
+		#_messagePlain_probe 'warn: not found: translate2geda - Optional end user tool. Consider install from '"'"_lib/optional"'"' if desired to convert gerbers or similar to gEDA footprint.'
 	fi
 	
 	
@@ -17839,14 +17842,19 @@ _geda_compile_layers_cad() {
 	
 	
 	gerbv --units=mil -D"$currentDPI_svg"x"$currentDPI_svg" -b \#FFFFFF --export svg --output "$currentSpecific_work_cad"/dimension_top_copper.svg "$intermediate_layers"/"$currentInput_name".topsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".topmask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr "$intermediate_layers"/"$currentInput_name".top.gbr
+	gerbv --units=mil -D"$currentDPI"x"$currentDPI" --export rs274x --output "$currentSpecific_work_cad"/dimension_top_copper.gbr "$intermediate_layers"/"$currentInput_name".topsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".topmask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr "$intermediate_layers"/"$currentInput_name".top.gbr
+	
 	
 	gerbv --units=mil -D"$currentDPI_svg"x"$currentDPI_svg" -b \#FFFFFF --export svg --output "$currentSpecific_work_cad"/dimension_top.svg "$intermediate_layers"/"$currentInput_name".topsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".topmask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr
+	gerbv --units=mil -D"$currentDPI"x"$currentDPI" --export rs274x --output "$currentSpecific_work_cad"/dimension_top.gbr "$intermediate_layers"/"$currentInput_name".topsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".topmask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr
 	
 	
 	gerbv --units=mil -D"$currentDPI_svg"x"$currentDPI_svg" -b \#FFFFFF --export svg --output "$currentSpecific_work_cad"/dimension_bottom_copper.svg "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".bottommask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr "$intermediate_layers"/"$currentInput_name".bottom.gbr
+	gerbv --units=mil -D"$currentDPI"x"$currentDPI" --export rs274x --output "$currentSpecific_work_cad"/dimension_bottom_copper.gbr "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".bottommask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr "$intermediate_layers"/"$currentInput_name".bottom.gbr
+	
 	
 	gerbv --units=mil -D"$currentDPI_svg"x"$currentDPI_svg" -b \#FFFFFF --export svg --output "$currentSpecific_work_cad"/dimension_bottom.svg "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".bottommask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr
-	
+	gerbv --units=mil -D"$currentDPI"x"$currentDPI" --export rs274x --output "$currentSpecific_work_cad"/dimension_bottom.gbr "$intermediate_layers"/"$currentInput_name".bottomsilk.gbr "$intermediate_layers"/"$currentInput_name".plated-drill.cnc "$intermediate_layers"/"$currentInput_name".bottommask.gbr "$intermediate_layers"/"$currentInput_name".outline.gbr
 	
 	
 	
@@ -17861,6 +17869,19 @@ _geda_compile_layers_cad() {
 	
 	# CAUTION: DXF export is considered unreliable. Prefer SVG.
 	pstoedit -psarg '-r'"$currentDPI_svg"x"$currentDPI_svg" -dt -f dxf "$currentSpecific_work_cad"/combined.eps "$currentSpecific_work_cad"/combined.dxf
+	
+	
+	
+	#if ! _typeDep translate2geda && ! _typeDep _translate2geda
+	if ! _typeDep _translate2geda
+	then
+		_messagePlain_bad 'warn: missing: _translate2geda - Unable to create dimension foorprints.'
+		#_messagePlain_probe 'warn: not found: translate2geda - Optional end user tool. Consider install from '"'"_lib/optional"'"' if desired to convert gerbers or similar to gEDA footprint.'
+	else
+		_translate2geda "$currentSpecific_work_cad"/dimension_top.gbr
+	fi
+	
+	
 	
 	
 	

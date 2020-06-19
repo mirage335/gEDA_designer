@@ -249,9 +249,12 @@ _test_prog() {
 		_messagePlain_request 'request: install from '"'"_lib/optional"'"' '
 	fi
 	
-	if ! _typeDep translate2geda && ! _typeDep _translate2geda
+	# CAUTION: While it is allowed by default to proceed without '_translate2geda', doing so will result in geometry lacking a footprint output.
+	#if ! _typeDep translate2geda && ! _typeDep _translate2geda
+	if ! _typeDep _translate2geda
 	then
-		_messagePlain_probe 'warn: not found: translate2geda - Optional end user tool. Consider install from '"'"_lib/optional"'"' if desired to convert gerbers or similar to gEDA footprint.'
+		_messagePlain_bad 'warn: missing: _translate2geda - Unable to create dimension foorprints.'
+		#_messagePlain_probe 'warn: not found: translate2geda - Optional end user tool. Consider install from '"'"_lib/optional"'"' if desired to convert gerbers or similar to gEDA footprint.'
 	fi
 	
 	
