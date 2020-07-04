@@ -17158,7 +17158,7 @@ _geda_compile_XY() {
 		while read currentLine_bom
 		do
 			
-			if ! echo "$currentLine_bom" | cut -f1 | grep "$refdes" > /dev/null
+			if ! echo "$currentLine_bom" | cut -f1 | grep ^"$refdes" > /dev/null
 			then
 				continue
 			fi
