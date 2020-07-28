@@ -4236,6 +4236,10 @@ _compile_bash_program_prog() {
 	includeScriptList+=( core__geda____manufacturer_default.sh )
 	
 	
+	includeScriptList+=( core__color.sh )
+	
+	
+	
 	#includeScriptList+=( core.sh )
 	includeScriptList+=( core_default.sh )
 }

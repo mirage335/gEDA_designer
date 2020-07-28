@@ -35,7 +35,7 @@ _gschem_deconfigure_method() {
 
 
 
-
+# WARNING: Not necessarily referenced by other functions. Intended to be called on an as-needed basis, if common versions of the 'pcb' executable are found to be lacking necessary features.
 _pcb_executable() {
 	pcb "$@"
 }

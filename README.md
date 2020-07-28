@@ -8,16 +8,23 @@ Designer scripts using and supplementing gEDA , and similar. Design typical asse
 
 "_gEDA_designer_geometry"
 
-## Attributes
+"_pcb_color"
+"_pcb_color_T568A"
+"_pcb_color_wirewrap"
+"_pcb_color_rainbow"
+
+## _gEDA_designer_geometry
+
+### Attributes
 
 
-### PCBWay
+#### PCBWay
 
 Notably, components may be of type SMD, Thru-Hole, or "DNS", with the latter designation apparently "Do Not Stuff" equivalent to "Do Not Place". In practice, this may not need to be specified, particularly if board is predominantly SMD or through-hole. Best design practice may be to use separate PCBs for SMD and through-hole components.
 
 Table format is one of '.xls, xlsx or .csv' . In practice, it may be possible to provide identical information as both xlsx and csv for convenience.
 
-### XY Centroid
+#### XY Centroid
 
 Only include surface mount parts.
 
@@ -49,7 +56,7 @@ From SmallBatchAssembly. One of - 'tape-with-leader, tape-no-leader, other'.
 From SmallBatchAssembly. Only required if 'KITTING == other'. 'Free text which describes kitting.'
 
 
-### BOM
+#### BOM
 
 Column name title header.
 refdes:footprint:value:description:cost:device:mfr:mfrpn:dst:dstpn:link:link_page:supplier:sbapn:kitting:kitting_d:nobom:noplace:qty
@@ -85,7 +92,7 @@ Either 'unknown' or true. May be discarded in favor of simply discarding matchin
 Total number of line-item .
 
 
-### SmallBatchAssembly
+#### SmallBatchAssembly
 
 No header comments. Rotation may be strictly based on silkscreen markings for polarized parts, possibly subject to customer feedback. BOM submission may allow NoPart assignment.
 
@@ -128,6 +135,9 @@ REQUIRED if customer supplied part. 'URL to page on datasheet containing package
 
 
 
+# _pcb_color
+
+Various color schmes are available as scripted parameters for gEDA. Expected use case is creation of point-to-point wiring diagrams. Standardized layer name and grouping scheme required. See '_lib/diagram_template' .
 
 
 
