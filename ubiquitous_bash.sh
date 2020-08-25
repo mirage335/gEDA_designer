@@ -16886,8 +16886,10 @@ _test_prog() {
 }
 
 _setup_prog() {
-	#true
+	mkdir -p "$HOME"/.local/share/templates
+	cp "$scriptLib"/filemanager_templates/* "$HOME"/.local/share/templates/
 	
+	[[ ! -e "$HOME"/.local/share/templates/diagram_PCB.pcb ]] && echo 'warn: missing: ~/.local/share/templates/*'
 	
 	return 0
 }
