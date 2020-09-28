@@ -26,6 +26,8 @@ _geda_compile___file_pcb() {
 	_geda_compile_intermediate_layers "$@"
 	_geda_compile_intermediate_materials "$@"
 	
+	_geda_compile_intermediate_diagram_png "$@"
+	
 }
 
 _geda_compile___file_sch() {

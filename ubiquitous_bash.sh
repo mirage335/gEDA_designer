@@ -17313,7 +17313,64 @@ _check_geda_intermediate_all() {
 }
 
 
-
+_geda_compile_intermediate_diagram_png() {
+	_messagePlain_nominal 'Compile: intermediate_diagram_png'
+	#cd "$se_sketchDir"
+	cd "$se_in_tmp"
+	
+	export intermediate_diagram="$se_out_tmp"/_intermediate/diagram/"$currentInput_name"
+	
+	mkdir -p "$intermediate_diagram"
+	mkdir -p "$se_out"/_intermediate/diagram/"$currentInput_name"
+	
+	#pcb -x gerber --all-layers --name-style fixed --gerberfile ./_build/30MHzLowPass ./30MHzLowPass.pcb
+	#_messagePlain_probe_cmd pcb -x gerber --all-layers --name-style fixed --gerberfile "$intermediate_diagram"/"$currentInput_name" "$currentInput"
+	
+	#_messagePlain_probe_cmd pcb -x png --dpi 300 --outfile "$intermediate_diagram"/"$currentInput_name".png --layer-color-1 "#6666FF" --layer-color-2 "#0000A6" --layer-color-3 "#FFCC66" --layer-color-4 "#A66F00" --layer-color-5 "#66FF66" --layer-color-6 "#00A600" --layer-color-7 "#8C4F31" --layer-color-8 "#592C16" --layer-color-9 "#E6B8B8" --layer-color-10 "#E6DAB8" --layer-color-11 "#CFE6B8" --layer-color-12 "#CFB8E6" --layer-color-13 "#001819" --layer-color-14 "#404040" --layer-color-15 "#330000" --layer-color-16 "#332600" "$currentInput"
+	#pcb -x png --dpi 300 --outfile "$intermediate_diagram"/"$currentInput_name".png --layer-color-1 "#6666FF" --layer-color-2 "#0000A6" --layer-color-3 "#FFCC66" --layer-color-4 "#A66F00" --layer-color-5 "#66FF66" --layer-color-6 "#00A600" --layer-color-7 "#8C4F31" --layer-color-8 "#592C16" --layer-color-9 "#E6B8B8" --layer-color-10 "#E6DAB8" --layer-color-11 "#CFE6B8" --layer-color-12 "#CFB8E6" --layer-color-13 "#001819" --layer-color-14 "#404040" --layer-color-15 "#330000" --layer-color-16 "#332600" --white-color "#000000" --black-color "#FFFFFF" --background-color "#E5E5E5" "$currentInput"
+	#pcb -x ps --psfile ./test.ps --ps-color --dpi 300 --layer-color-1 "#6666FF" --layer-color-2 "#0000A6" --layer-color-3 "#FFCC66" --layer-color-4 "#A66F00" --layer-color-5 "#66FF66" --layer-color-6 "#00A600" --layer-color-7 "#8C4F31" --layer-color-8 "#592C16" --layer-color-9 "#E6B8B8" --layer-color-10 "#E6DAB8" --layer-color-11 "#CFE6B8" --layer-color-12 "#CFB8E6" --layer-color-13 "#001819" --layer-color-14 "#404040" --layer-color-15 "#330000" --layer-color-16 "#332600" --white-color "#000000" --black-color "#FFFFFF" --background-color "#E5E5E5" "$currentInput"
+	
+	#_geda_compile_layers
+	
+	
+	#pcb -x png --dpi 300 --outfile "$intermediate_diagram"/"$currentInput_name".png --layer-color-1 "#6666FF" --layer-color-2 "#0000A6" --layer-color-3 "#FFCC66" --layer-color-4 "#A66F00" --layer-color-5 "#66FF66" --layer-color-6 "#00A600" --layer-color-7 "#8C4F31" --layer-color-8 "#592C16" --layer-color-9 "#E6B8B8" --layer-color-10 "#E6DAB8" --layer-color-11 "#CFE6B8" --layer-color-12 "#CFB8E6" --layer-color-13 "#001819" --layer-color-14 "#404040" --layer-color-15 "#330000" --layer-color-16 "#332600" --white-color "#000000" --black-color "#FFFFFF" --background-color "#E5E5E5" "$currentInput"
+	
+	#--use-alpha
+	"$scriptAbsoluteLocation" _pcb_color_project "T568A-special-png" "$currentInput" -x png --dpi 1200 --outfile "$intermediate_diagram"/"$currentInput_name"-T568A-raw.png
+	"$scriptAbsoluteLocation" _pcb_color_project "rainbow-special-png" "$currentInput" -x png --dpi 1200 --outfile "$intermediate_diagram"/"$currentInput_name"-rainbow-raw.png
+	"$scriptAbsoluteLocation" _pcb_color_project "wirewrap-special-png" "$currentInput" -x png --dpi 1200 --outfile "$intermediate_diagram"/"$currentInput_name"-wirewrap-raw.png
+	"$scriptAbsoluteLocation" _pcb_color_project "custom-special-png" "$currentInput" -x png --dpi 1200 --outfile "$intermediate_diagram"/"$currentInput_name"-custom-raw.png
+	
+	cp "$intermediate_diagram"/* "$se_out"/_intermediate/diagram/"$currentInput_name"/
+	
+	
+	_messageNormal "Compile: CAD: diagram"
+	
+	
+	local currentSpecific_work_cad
+	currentSpecific_work_cad="$safeTmp"/_specific/cad/"$currentInput_name"
+	mkdir -p "$currentSpecific_work_cad"
+	
+	# ATTENTION: Rather than merely copying/renaming files, image postprocessing may be done here.
+	# Color swapping to improve diagram contrast/readability might be desirable.
+	# In practice, sufficiently robust and simple color swapping may not be practical with typically available applications (ie. ImageMagick).
+	# Scriptable desktop applications in particular (ie. Inkscape, GIMP) may change too much in fucntionality or availability with sufficient time.
+	
+	#cp "$se_out"/_intermediate/diagram/"$currentInput_name"/* "$currentSpecific_work_cad"/
+	cp "$se_out"/_intermediate/diagram/"$currentInput_name"/"$currentInput_name"-T568A-raw.png "$currentSpecific_work_cad"/"$currentInput_name"-T568A.png
+	cp "$se_out"/_intermediate/diagram/"$currentInput_name"/"$currentInput_name"-rainbow-raw.png "$currentSpecific_work_cad"/"$currentInput_name"-rainbow.png
+	cp "$se_out"/_intermediate/diagram/"$currentInput_name"/"$currentInput_name"-wirewrap-raw.png "$currentSpecific_work_cad"/"$currentInput_name"-wirewrap.png
+	cp "$se_out"/_intermediate/diagram/"$currentInput_name"/"$currentInput_name"-custom-raw.png "$currentSpecific_work_cad"/"$currentInput_name"-custom.png
+	
+	mkdir -p "$se_out"/cad/"$currentInput_name"/
+	cp "$currentSpecific_work_cad"/* "$se_out"/cad/"$currentInput_name"/
+	
+	
+	
+	
+	_messageNormal "Compile: CAD: diagram: end"
+	
+}
 
 _geda_compile_intermediate_layers() {
 	_messagePlain_nominal 'Compile: intermediate_layers'
@@ -19082,6 +19139,8 @@ _geda_compile___file_pcb() {
 	_geda_compile_intermediate_layers "$@"
 	_geda_compile_intermediate_materials "$@"
 	
+	_geda_compile_intermediate_diagram_png "$@"
+	
 }
 
 _geda_compile___file_sch() {
@@ -19343,6 +19402,17 @@ _pcb_color_config_custom() {
 		# Additional layers typically invalid, as cables are bundles of smaller numbers of wires, and color codes are repeated for each bundle.
 		specialArgs_pcb+=( --layer-color-9 "#E6B8B8" --layer-color-10 "#E6DAB8" --layer-color-11 "#CFE6B8" --layer-color-12 "#CFB8E6" )
 	fi
+	if [[ "$current_pcbColorSchemeWiringDiagram" == "custom-special-png" ]]
+	then
+		# Standard 'T568A' colors commonly used by Ethernet/Telephone cable.
+		
+		specialArgs_pcb+=( --layer-color-1 "#6666FF" --layer-color-2 "#0000A6" --layer-color-3 "#FFCC66" --layer-color-4 "#A66F00" --layer-color-5 "#66FF66" --layer-color-6 "#00A600" --layer-color-7 "#8C4F31" --layer-color-8 "#592C16" )
+		
+		# Additional layers typically invalid, as cables are bundles of smaller numbers of wires, and color codes are repeated for each bundle.
+		specialArgs_pcb+=( --layer-color-9 "#E6B8B8" --layer-color-10 "#E6DAB8" --layer-color-11 "#CFE6B8" --layer-color-12 "#CFB8E6" )
+	fi
+	
+	return 0
 }
 
 
@@ -19367,6 +19437,26 @@ _pcb_color_config() {
 		# Additional layers typically invalid, as cables are bundles of smaller numbers of wires, and color codes are repeated for each bundle.
 		specialArgs_pcb+=( --layer-color-11 "#CFE6B8" --layer-color-12 "#CFB8E6" )
 	fi
+	if [[ "$current_pcbColorSchemeWiringDiagram" == "rainbow-special-png" ]]
+	then
+		# Common 'rainbow' jumper and ribbon cable colors.
+		
+		#jump, grey, white, black
+		#C7C7C7
+		#696563
+		#C7C7C7
+		#000000
+		
+		# https://en.wikipedia.org/wiki/Ribbon_cable#Color-coding
+		# https://en.wikipedia.org/wiki/Electronic_color_code
+		# Brown, red, orange, yellow, green, blue, purple, grey, white, black .
+		# ATTENTION: Brown is pin 1.
+		# WARNING: White (X5_W09) color could be mistaken for far side layer.
+		specialArgs_pcb+=( --layer-color-1 "#884C31" --layer-color-2 "#CA3109" --layer-color-3 "#C46A07" --layer-color-4 "#CAB83F" --layer-color-5 "#0E915A" --layer-color-6 "#113AA6" --layer-color-7 "#5A415D" --layer-color-8 "#696563" --layer-color-9 "#C7C7C7" --layer-color-10 "#000000" )
+		
+		# Additional layers typically invalid, as cables are bundles of smaller numbers of wires, and color codes are repeated for each bundle.
+		specialArgs_pcb+=( --layer-color-11 "#CFE6B8" --layer-color-12 "#CFB8E6" )
+	fi
 	
 	if [[ "$current_pcbColorSchemeWiringDiagram" == "wirewrap" ]]
 	then
@@ -19383,7 +19473,21 @@ _pcb_color_config() {
 		# Additional layers typically invalid, as cables are bundles of smaller numbers of wires, and color codes are repeated for each bundle.
 		specialArgs_pcb+=( --layer-color-9 "#E6B8B8" --layer-color-10 "#E6DAB8" --layer-color-11 "#CFE6B8" --layer-color-12 "#CFB8E6" )
 	fi
-	
+	if [[ "$current_pcbColorSchemeWiringDiagram" == "wirewrap-special-png" ]]
+	then
+		# Typical 'wirewrap' colors.
+		
+		# https://en.wikipedia.org/wiki/Wire_wrap
+		# https://en.wikipedia.org/wiki/Electronic_color_code
+		# Blue, Yellow, Violet, Green, Orange, Brown/White, Red, Black.
+		# Blue, Yellow as first two layers (Bottom, Top, respectively).
+		# Violet, Green, Orange, Brown/White, as subsequent arbitrary layers.
+		# Red, Black as logic power, or subsequent arbitrary layers.
+		specialArgs_pcb+=( --layer-color-1 "#246F9B" --layer-color-2 "#D2B831" --layer-color-3 "#8276AA" --layer-color-4 "#379966" --layer-color-5 "#D76B2F" --layer-color-6 "#7C4E3B" --layer-color-7 "#9B3025" --layer-color-8 "#595959" )
+		
+		# Additional layers typically invalid, as cables are bundles of smaller numbers of wires, and color codes are repeated for each bundle.
+		specialArgs_pcb+=( --layer-color-9 "#E6B8B8" --layer-color-10 "#E6DAB8" --layer-color-11 "#CFE6B8" --layer-color-12 "#CFB8E6" )
+	fi
 	
 	
 	if [[ "$current_pcbColorSchemeWiringDiagram" == "T568A" ]]
@@ -19395,16 +19499,56 @@ _pcb_color_config() {
 		# Additional layers typically invalid, as cables are bundles of smaller numbers of wires, and color codes are repeated for each bundle.
 		specialArgs_pcb+=( --layer-color-9 "#E6B8B8" --layer-color-10 "#E6DAB8" --layer-color-11 "#CFE6B8" --layer-color-12 "#CFB8E6" )
 	fi
+	if [[ "$current_pcbColorSchemeWiringDiagram" == "T568A-special-png" ]]
+	then
+		# Standard 'T568A' colors commonly used by Ethernet/Telephone cable.
+		
+		specialArgs_pcb+=( --layer-color-1 "#6666FF" --layer-color-2 "#0000A6" --layer-color-3 "#FFCC66" --layer-color-4 "#A66F00" --layer-color-5 "#66FF66" --layer-color-6 "#00A600" --layer-color-7 "#8C4F31" --layer-color-8 "#592C16" )
+		
+		# Additional layers typically invalid, as cables are bundles of smaller numbers of wires, and color codes are repeated for each bundle.
+		specialArgs_pcb+=( --layer-color-9 "#E6B8B8" --layer-color-10 "#E6DAB8" --layer-color-11 "#CFE6B8" --layer-color-12 "#CFB8E6" )
+	fi
+	
+	return 0
 }
 
 _pcb_color_config_exclude() {
 	export specialArgs_pcb
 	
-	#"outline - #001819 or #191919
-	#"jump" - #404040
-	#"exclude1" - #330000
-	#"exclude2" - #332600
-	specialArgs_pcb+=( --layer-color-13 "#001819" --layer-color-14 "#404040" --layer-color-15 "#330000" --layer-color-16 "#332600" )
+	if [[ "$current_pcbColorSchemeWiringDiagram" == *"special-png" ]]
+	then
+		#"outline
+		#"jump" - #C7C7C7... #B18883 ... #B17C7E, #B17C85... #FF26C9
+		#"exclude1"
+		#"exclude2"
+		specialArgs_pcb+=( --layer-color-13 "#001819" --layer-color-14 "#FF26C9" --layer-color-15 "#F7F0F0" --layer-color-16 "#F7F5F0" )
+	else
+		#"outline - #001819 or #191919
+		#"jump" - #404040
+		#"exclude1" - #330000
+		#"exclude2" - #332600
+		specialArgs_pcb+=( --layer-color-13 "#001819" --layer-color-14 "#404040" --layer-color-15 "#330000" --layer-color-16 "#332600" )
+	fi
+	
+	return 0
+}
+
+_pcb_color_config_special_png() {
+	export specialArgs_pcb
+	
+	if [[ "$current_pcbColorSchemeWiringDiagram" == *"special-png" ]]
+	then
+		#Hue 75
+		#324200 - 26 value, 100 saturation
+		#E2FF8C - 100 value, 45 saturation
+		#CBE67E
+		#BFD977
+		specialArgs_pcb+=( --white-color "#000000" --black-color "#FFFFFF" --background-color "#E5E5E5" --element-color "#CBE67E" )
+	fi
+	
+	true
+	
+	return 0
 }
 
 
@@ -19424,8 +19568,20 @@ _pcb_color_procedure() {
 	_pcb_color_config "$current_pcbColorSchemeWiringDiagram"
 	_pcb_color_config_custom "$current_pcbColorSchemeWiringDiagram"
 	_pcb_color_config_exclude "$current_pcbColorSchemeWiringDiagram"
+	_pcb_color_config_special_png "$current_pcbColorSchemeWiringDiagram"
 	
-	pcb "${specialArgs_pcb[@]}" "$@"
+	
+	# ATTENTION: Apparently, 'pcb' requires export parameters to precede color definition parameters.
+	
+	# WARNING: Requires file parameter to always be given as the first parameter.
+	local current_firstParam
+	current_firstParam="$1"
+	shift
+	pcb "$@" "${specialArgs_pcb[@]}" "$current_firstParam"
+	
+	# WARNING: Not tested successfully.
+	# WARNING: Placing all user parameters first is technically ambigious - the color definition parameters might reasonably be interpreted not to apply to the preceding file parameter.
+	#pcb "$@" "${specialArgs_pcb[@]}"
 }
 
 # Unusual. Typically used to temporarily set atypical wiring colors, possibly to accommodate scrap or specialized (eg. high-temperature, fiber optic) wire.
