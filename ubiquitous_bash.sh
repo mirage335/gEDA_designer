@@ -19518,10 +19518,17 @@ _pcb_color_config_exclude() {
 	if [[ "$current_pcbColorSchemeWiringDiagram" == *"special-png" ]]
 	then
 		#"outline
-		#"jump" - #C7C7C7... #B18883 ... #B17C7E, #B17C85... #FF26C9
+		#"jump" - #C7C7C7 or #C2C2C2... #B18883 ... #B17C7E, #B17C85... #FF26C9
 		#"exclude1"
 		#"exclude2"
-		specialArgs_pcb+=( --layer-color-13 "#001819" --layer-color-14 "#FF26C9" --layer-color-15 "#F7F0F0" --layer-color-16 "#F7F5F0" )
+		# High-visibility magenta (request color) used for jump layer on rainbow cable wiring diagrams. This is to avoid four levels of grey (jump, grey, white, black), which may be unreadable.
+		if [[ "$current_pcbColorSchemeWiringDiagram" == "rainbow-special-png" ]]
+		then
+			specialArgs_pcb+=( --layer-color-13 "#001819" --layer-color-14 "#FF26C9" --layer-color-15 "#F7F0F0" --layer-color-16 "#F7F5F0" )
+		# Most wiring diagrams not using rainbow cable are likely to include large ground planes which may degrade readability if high-visibility magenta (request color).
+		else
+			specialArgs_pcb+=( --layer-color-13 "#001819" --layer-color-14 "#C2C2C2" --layer-color-15 "#F7F0F0" --layer-color-16 "#F7F5F0" )
+		fi
 	else
 		#"outline - #001819 or #191919
 		#"jump" - #404040
