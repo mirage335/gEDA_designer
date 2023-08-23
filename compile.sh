@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='896800934'
+export ub_setScriptChecksum_contents='3534756308'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -225,10 +225,14 @@ then
 fi
 
 
-
+# WARNING: May conflict with 'export LANG=C' or similar.
 # Workaround for very minor OS misconfiguration. Setting this variable at all may be undesirable however. Consider enabling and generating all locales with 'sudo dpkg-reconfigure locales' or similar .
 #[[ "$LC_ALL" == '' ]] && export LC_ALL="en_US.UTF-8"
 
+# WARNING: Do NOT use 'ubKeep_LANG' unless necessary!
+# nix-shell --run "locale -a" -p bash
+#  C   C.utf8   POSIX
+[[ "$ubKeep_LANG" != "true" ]] && [[ "$LANG" != "C" ]] && export LANG="C"
 
 
 # WARNING: Only partially compatible.
@@ -272,6 +276,21 @@ then
 fi
 
 
+# ATTENTION: Highly irregular. Workaround due to gsch2pcb installed by nix package manager not searching for installed footprints.
+if [[ "$NIX_PROFILES" != "" ]]
+then
+	if [[ -e "$HOME"/.nix-profile/bin/gsch2pcb ]] && [[ -e /usr/local/share/pcb/newlib ]] && [[ -e /usr/local/lib/pcb_lib ]]
+	then
+		gsch2pcb() {
+			"$HOME"/.nix-profile/bin/gsch2pcb --elements-dir /usr/local/share/pcb/newlib --elements-dir /usr/local/lib/pcb_lib "$@"
+		}
+	elif [[ -e /usr/share/pcb/pcblib-newlib ]]
+	then
+		gsch2pcb() {
+			"$HOME"/.nix-profile/bin/gsch2pcb --elements-dir /usr/share/pcb/pcblib-newlib "$@"
+		}
+	fi
+fi
 
 
 # Only production use is Inter-Process Communication (IPC) loops which may be theoretically impossible to make fully deterministic under Operating Systems which do not have hard-real-time kernels and/or may serve an unlimited number of processes.
@@ -654,9 +673,10 @@ fi
 
 # ATTENTION: Workaround - Cygwin Portable - append MSW PATH if reasonable.
 # NOTICE: Also see '_test-shell-cygwin' .
+# MSWEXTPATH lengths up to 33, 38, are known reasonable values.
 if [[ "$MSWEXTPATH" != "" ]] && ( [[ "$PATH" == *"/cygdrive"* ]] || [[ "$PATH" == "/cygdrive"* ]] ) && [[ "$convertedMSWEXTPATH" == "" ]] && _if_cygwin
 then
-	if [[ $(echo "$MSWEXTPATH" | grep -o ';\|:' | wc -l | tr -dc '0-9') -le 32 ]] && [[ $(echo "$PATH" | grep -o ':' | wc -l | tr -dc '0-9') -le 32 ]]
+	if [[ $(echo "$MSWEXTPATH" | grep -o ';\|:' | wc -l | tr -dc '0-9') -le 44 ]] && [[ $(echo "$PATH" | grep -o ':' | wc -l | tr -dc '0-9') -le 44 ]]
 	then
 		export convertedMSWEXTPATH=$(cygpath -p "$MSWEXTPATH")
 		export PATH=/usr/bin:"$convertedMSWEXTPATH":"$PATH"
@@ -744,6 +764,44 @@ then
 	ionice() {
 		false
 	}
+
+	_wsl() {
+		local currentBin_wsl
+		currentBin_wsl=$(type -p wsl)
+
+		if ( [[ "$1" != "-"* ]] || [[ "$1" == "-u" ]] || [[ "$1" == "-e" ]] || [[ "$1" == "--exec" ]] ) && ( [[ "$1" != "-d" ]] || [[ "$2" != "-d" ]] || [[ "$3" != "-d" ]] || [[ "$4" != "-d" ]] || [[ "$5" != "-d" ]] || [[ "$6" != "-d" ]] )
+		then
+			if "$currentBin_wsl" --list | tr -dc 'a-zA-Z0-9\n' | grep '^ubdist' > /dev/null 2>&1
+			then
+				#"$currentBin_wsl" -u root -d ubdist "$@"
+				"$currentBin_wsl" -d ubdist "$@"
+				return
+			elif "$currentBin_wsl" --list | tr -dc 'a-zA-Z0-9\n' | grep '^ubDistBuild' > /dev/null 2>&1
+			then
+				#"$currentBin_wsl" -u root -d ubDistBuild "$@"
+				"$currentBin_wsl" -d ubDistBuild "$@"
+				return
+			elif "$currentBin_wsl" --list | tr -dc 'a-zA-Z0-9\n' | grep '^ubdist_embedded' > /dev/null 2>&1
+			then
+				#"$currentBin_wsl" -u root -d ubdist_embedded "$@"
+				"$currentBin_wsl" -d ubdist_embedded "$@"
+				return
+			elif "$currentBin_wsl" --list | tr -dc 'a-zA-Z0-9\n' | grep '^Debian' > /dev/null 2>&1
+			then
+				#"$currentBin_wsl" -u root -d Debian "$@"
+				"$currentBin_wsl" -d Debian "$@"
+				return
+			fi
+			"$currentBin_wsl" "$@"
+			return
+		fi
+		"$currentBin_wsl" "$@"
+		return
+	}
+	#l() {
+		#_wsl "$@"
+	#}
+	alias l='_wsl'
 fi
 
 
@@ -775,12 +833,26 @@ _sudo_cygwin_sequence() {
 	chmod u+x "$safeTmp"/cygwin_sudo_temp.sh
 	
 	
-	
+		
 	cp "$scriptAbsoluteLocation" "$safeTmp"/
-	chmod u+x "$safeTmp"/$(basename "$scriptAbsoluteLocation")
+	local currentScriptBasename
+	currentScriptBasename=$(basename "$scriptAbsoluteLocation")
+	chmod u+x "$safeTmp"/"$currentScriptBasename"
 	
-	cp "$scriptAbsoluteFolder"/_bin.bat "$safeTmp"/_bin.bat
+	cp "$scriptLib"/ubiquitous_bash/_bin.bat "$safeTmp"/_bin.bat 2>/dev/null
+	cp -f "$scriptAbsoluteFolder"/_bin.bat "$safeTmp"/_bin.bat 2>/dev/null
 	chmod u+x "$safeTmp"/_bin.bat
+
+	[[ ! -e "$safeTmp"/_bin.bat ]] && _messagePlain_bad 'bad: missing: _bin.bat' && _messageFAIL && _stop 1
+
+	if type _anchor_configure > /dev/null 2>&1
+	then
+		"$safeTmp"/"$currentScriptBasename" _anchor_configure "$safeTmp"/_bin.bat
+	else
+		_messagePlain_bad 'bad: missing: _anchor_configure'
+		_messageFAIL && _stop 1
+		_stop 1
+	fi
 	
 
 	# 'Do it as Administrator.'
@@ -789,7 +861,9 @@ _sudo_cygwin_sequence() {
 	if [[ "$scriptAbsoluteFolder" == "/cygdrive/c"* ]]
 	then
 		# WARNING: May be untested, or (especially under interactive shell) may call obsolete code.
-		cygstart --action=runas "$scriptAbsoluteFolder"/_bin.bat "$safeTmp"/cygwin_sudo_temp.sh
+		#cygstart --action=runas "$scriptAbsoluteFolder"/_bin.bat "$safeTmp"/cygwin_sudo_temp.sh
+
+		cygstart --action=runas "$safeTmp"/_bin.bat "$safeTmp"/cygwin_sudo_temp.sh
 	else
 		cygstart --action=runas "$safeTmp"/_bin.bat "$safeTmp"/cygwin_sudo_temp.sh
 	fi
@@ -807,6 +881,7 @@ _sudo_cygwin() {
 }
 
 # CAUTION: BROKEN !
+# (at least historically this did not work reliably though it may or may not be reliable now)
 if _if_cygwin && type cygstart > /dev/null 2>&1
 then
 	sudo_cygwin() {
@@ -824,6 +899,11 @@ then
 		
 		return 1
 	}
+	sudoc() {
+		[[ "$1" == "-n" ]] && return 1
+		sudo_cygwin "$@"
+	}
+	alias sudo=sudoc
 fi
 
 
@@ -859,6 +939,16 @@ _userMSW() {
 }
 
 
+_powershell() {
+    local currentPowershellBinary
+    currentPowershellBinary=$(find /cygdrive/c/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+    [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /cygdrive/d/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+    [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /cygdrive/e/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+    [[ "$currentPowershellBinary" == "" ]] && currentPowershellBinary=$(find /cygdrive/f/Windows/System32/WindowsPowerShell/ -name powershell.exe 2>/dev/null | head -n 1)
+
+	#_userMSW "$currentPowershellBinary" "$@"
+    "$currentPowershellBinary" "$@"
+}
 
 
 
@@ -867,7 +957,7 @@ _discoverResource-cygwinNative-ProgramFiles-declaration-ProgramFiles() {
 	currentBinary="$1"
 	
 	local currentBinary_functionName
-	currentBinary_functionName=$(echo "$1" | tr -dc 'a-zA-Z0-9')
+	currentBinary_functionName=$(echo "$1" | tr -dc 'a-zA-Z0-9\-_')
 	
 	local currentExpectedSubdir
 	currentExpectedSubdir="$2"
@@ -899,7 +989,7 @@ _discoverResource-cygwinNative-ProgramFiles-declaration-core() {
 	currentBinary="$1"
 	
 	local currentBinary_functionName
-	currentBinary_functionName=$(echo "$1" | tr -dc 'a-zA-Z0-9')
+	currentBinary_functionName=$(echo "$1" | tr -dc 'a-zA-Z0-9\-_')
 	
 	local currentExpectedSubdir
 	currentExpectedSubdir="$2"
@@ -933,7 +1023,7 @@ _discoverResource-cygwinNative-ProgramFiles() {
 	local currentBinary
 	currentBinary="$1"
 	local currentBinary_functionName
-	currentBinary_functionName=$(echo "$1" | tr -dc 'a-zA-Z0-9')
+	currentBinary_functionName=$(echo "$1" | tr -dc 'a-zA-Z0-9\-_')
 	[[ "$3" != "true" ]] && type "$currentBinary_functionName" > /dev/null 2>&1 && return 0
 	
 	local currentCygdriveC_equivalent
@@ -1091,6 +1181,11 @@ then
 		export cygwinOverride_measureDateA=$(date +%s%N | cut -b1-13)
 		export ub_setScriptChecksum_contents_cygwinOverride="$ub_setScriptChecksum_contents"
 		
+		
+		_discoverResource-cygwinNative-ProgramFiles 'ykman' 'Yubico/YubiKey Manager' false
+		
+		
+		
 		_discoverResource-cygwinNative-ProgramFiles 'nmap' 'Nmap' false
 		
 		_discoverResource-cygwinNative-ProgramFiles 'qalc' 'Qalculate' false
@@ -1128,6 +1223,10 @@ then
 	fi
 	
 	export override_cygwin_vncviewer="true"
+
+	kwrite() {
+		kate -n "$@"
+	}
 fi
 
 # WARNING: What is otherwise considered bad practice may be accepted to reduce substantial MSW/Cygwin inconvenience .
@@ -1204,6 +1303,7 @@ _setup_ubiquitousBash_cygwin_procedure() {
 	cp "$scriptAbsoluteFolder"/_setup_ubcp.bat "$currentCygdriveC_equivalent"/core/infrastructure/ubiquitous_bash/
 	
 	cp "$scriptAbsoluteFolder"/_setupUbiquitous.bat "$currentCygdriveC_equivalent"/core/infrastructure/ubiquitous_bash/
+	cp "$scriptAbsoluteFolder"/_setupUbiquitous_nonet.bat "$currentCygdriveC_equivalent"/core/infrastructure/ubiquitous_bash/
 	
 	cp "$scriptAbsoluteFolder"/fork "$currentCygdriveC_equivalent"/core/infrastructure/ubiquitous_bash/
 	
@@ -5657,6 +5757,8 @@ _init_deps() {
 	export enUb_abstractfs=""
 	export enUb_buildBash=""
 	export enUb_buildBashUbiquitous=""
+
+	export enUb_virt_translation_gui=""
 	
 	export enUb_command=""
 	export enUb_synergy=""
@@ -5752,6 +5854,10 @@ _deps_notLean() {
 	_deps_bup
 	_deps_repo
 	export enUb_notLean="true"
+}
+
+_deps_github() {
+	export enUb_github="true"
 }
 
 _deps_distro() {
@@ -5931,6 +6037,12 @@ _deps_abstractfs() {
 	_deps_bup
 	_deps_virt
 	export enUb_abstractfs="true"
+}
+
+_deps_virt_translation_gui() {
+	_deps_virt_translation
+	
+	export enUb_virt_translation_gui="true"
 }
 
 _deps_command() {
@@ -6512,9 +6624,12 @@ _compile_bash_deps() {
 		_deps_abstractfs
 		
 		_deps_virt_translation
+
+		_deps_virt_translation_gui
 		
 		_deps_stopwatch
 		
+		_deps_github
 		
 		_deps_distro
 		_deps_getMinimal
@@ -6655,6 +6770,8 @@ _compile_bash_deps() {
 		
 		_deps_virt
 		#_deps_virt_thick
+
+		#_deps_virt_translation_gui
 		
 		#_deps_chroot
 		#_deps_bios
@@ -6686,6 +6803,8 @@ _compile_bash_deps() {
 		#_deps_cloud
 		#_deps_cloud_self
 		#_deps_cloud_build
+
+		_deps_github
 		
 		_deps_distro
 		_deps_getMinimal
@@ -6744,6 +6863,8 @@ _compile_bash_deps() {
 		
 		_deps_virt
 		_deps_virt_thick
+
+		_deps_virt_translation_gui
 		
 		_deps_chroot
 		_deps_bios
@@ -6775,6 +6896,8 @@ _compile_bash_deps() {
 		#_deps_cloud
 		#_deps_cloud_self
 		#_deps_cloud_build
+
+		_deps_github
 		
 		_deps_distro
 		_deps_getMinimal
@@ -6833,6 +6956,8 @@ _compile_bash_deps() {
 		
 		_deps_virt
 		_deps_virt_thick
+
+		_deps_virt_translation_gui
 		
 		_deps_chroot
 		_deps_bios
@@ -6864,6 +6989,8 @@ _compile_bash_deps() {
 		_deps_cloud
 		_deps_cloud_self
 		_deps_cloud_build
+
+		_deps_github
 		
 		_deps_distro
 		_deps_getMinimal
@@ -7009,6 +7136,7 @@ _compile_bash_utilities() {
 	[[ "$enUb_proxy" == "true" ]] && includeScriptList+=( "generic/net/proxy/vnc"/vnc_vncserver_operations.sh )
 	[[ "$enUb_proxy" == "true" ]] && includeScriptList+=( "generic/net/proxy/vnc"/vnc_vncviewer_operations.sh )
 	[[ "$enUb_proxy" == "true" ]] && includeScriptList+=( "generic/net/proxy/vnc"/vnc_x11vnc_operations.sh )
+	( [[ "$enUb_proxy" == "true" ]] || [[ "$enUb_cloud" == "true" ]] ) && includeScriptList+=( "generic/net/proxy/vnc"/vnchost.sh )
 	
 	[[ "$enUb_proxy" == "true" ]] && includeScriptList+=( "generic/net/proxy/proxyrouter"/here_proxyrouter.sh )
 	[[ "$enUb_proxy" == "true" ]] && includeScriptList+=( "generic/net/proxy/proxyrouter"/proxyrouter.sh )
@@ -7131,6 +7259,20 @@ _compile_bash_utilities_virtualization() {
 	[[ "$enUb_docker" == "true" ]] && includeScriptList+=( "virtualization/docker"/dockertest.sh )
 	[[ "$enUb_docker" == "true" ]] && includeScriptList+=( "virtualization/docker"/dockerchecks.sh )
 	[[ "$enUb_docker" == "true" ]] && includeScriptList+=( "virtualization/docker"/dockeruser.sh )
+
+
+	if ( [[ "$enUb_notLean" == "true" ]] || [[ "$enUb_image" == "true" ]] || [[ "$enUb_docker" == "true" ]] || [[ "$enUb_virt" == "true" ]] || [[ "$enUb_virt_thick" == "true" ]] || [[ "$enUb_virt_translation" == "true" ]] || [[ "$enUb_virt_translation_gui" == "true" ]] )
+	then
+		includeScriptList+=( "virtualization/wsl2"/wsl2.sh )
+		includeScriptList+=( "virtualization/wsl2"/wsl2_setup.sh )
+		
+		includeScriptList+=( "virtualization/wsl2"/here_wsl2.sh )
+		includeScriptList+=( "virtualization/wsl2"/wsl2_internal.sh )
+
+		includeScriptList+=( "virtualization/wsl2"/here_wsl2_gui.sh )
+	fi
+
+	( [[ "$enUb_virt_translation_gui" == "true" ]] ) && includeScriptList+=( "virtualization/wsl2"/wsl2_gui_internal.sh )
 }
 
 # WARNING: Shortcuts must NOT cause _stop/exit failures in _test/_setup procedures!
@@ -7170,10 +7312,13 @@ _compile_bash_shortcuts() {
 	
 	# WARNING: Some apps may have specific dependencies (eg. fakeHome, abstractfs, eclipse, atom).
 	[[ "$enUb_dev" == "true" ]] && includeScriptList+=( "shortcuts/dev/scope"/devscope_app.sh )
+
+	( [[ "$enUb_github" == "true" ]] || [[ "$enUb_notLean" == "true" ]] || [[ "$enUb_cloud" == "true" ]] || [[ "$enUb_cloud_heavy" == "true" ]] || [[ "$enUb_cloud_self" == "true" ]] ) && includeScriptList+=( "shortcuts/github"/github_removeHTTPS.sh )
 	
 	( [[ "$enUb_repo" == "true" ]] && [[ "$enUb_git" == "true" ]] ) && includeScriptList+=( "shortcuts/git"/git.sh )
 	( [[ "$enUb_repo" == "true" ]] && [[ "$enUb_git" == "true" ]] ) && includeScriptList+=( "shortcuts/git"/gitBare.sh )
 	includeScriptList+=( "shortcuts/git"/gitBest.sh )
+	includeScriptList+=( "shortcuts/git"/wget_githubRelease_internal.sh )
 	
 	[[ "$enUb_bup" == "true" ]] && includeScriptList+=( "shortcuts/bup"/bup.sh )
 	
@@ -7346,6 +7491,11 @@ _compile_bash_vars_spec() {
 	[[ "$enUb_virt" == "true" ]] && includeScriptList+=( "virtualization"/image/imagevars.sh )
 	
 	[[ "$enUb_proxy" == "true" ]] && includeScriptList+=( "generic/net/proxy/ssh"/sshvars.sh )
+
+	if ( [[ "$enUb_notLean" == "true" ]] || [[ "$enUb_image" == "true" ]] || [[ "$enUb_docker" == "true" ]] || [[ "$enUb_virt" == "true" ]] || [[ "$enUb_virt_thick" == "true" ]] || [[ "$enUb_virt_translation" == "true" ]] || [[ "$enUb_virt_translation_gui" == "true" ]] )
+	then
+		includeScriptList+=( "virtualization"/wsl2vars.sh )
+	fi
 	
 	
 	includeScriptList+=( "structure"/specglobalvars.sh )
@@ -7674,6 +7824,9 @@ _compile_bash() {
 		includeScriptList+=( "shortcuts/prompt"/visualPrompt.sh )
 		
 		
+		includeScriptList+=( "shortcuts"/git/wget_githubRelease_internal.sh )
+		
+		
 		
 		
 		#####Basic Variable Management
@@ -7702,14 +7855,22 @@ _compile_bash() {
 		includeScriptList+=( "structure"/localenv_prog.sh )
 		
 		
-		if [[ "$1" == "rotten_test" ]]
+		if [[ "$1" == "rotten_test" ]] || [[ "$1" == "rotten_test"* ]]
 		then
 			includeScriptList+=( "structure"/installation.sh )
 			includeScriptList+=( "structure"/installation_prog.sh )
 		fi
 		
-		#includeScriptList+=( "structure"/program.sh )
-		
+		if [[ "$1" == "rotten_test-extendedInterface" ]] || [[ "$1" == "rotten"*"-extendedInterface"* ]] || [[ "$1" == "rotten_test-"*"-MSW" ]] || [[ "$1" == "rotten_test-"*"-MSW"* ]]
+		then
+			# ATTENTION: May split anchor functions to 'setupUbiquitous-anchor.sh' .
+			includeScriptList+=( "shortcuts"/setupUbiquitous.sh )
+			#_compile_bash_shortcuts_setup
+			
+			includeScriptList+=( "structure"/program.sh )
+			_compile_bash_program
+			_compile_bash_program_prog
+		fi
 		
 		
 		#####Hardcoded
@@ -8041,6 +8202,38 @@ then
 		. "$scriptLocal"/ssh/opsauto
 	fi
 fi
+
+#wsl '~/.ubcore/ubiquitous_bash/ubiquitous_bash.sh' '_wrap' kwrite './gpl-3.0.txt'
+#wsl '~/.ubcore/ubiquitous_bash/ubiquitous_bash.sh' '_wrap' ldesk
+_wrap() {
+	[[ "$LANG" != "C" ]] && export LANG=C
+	. "$HOME"/.ubcore/.ubcorerc
+	
+	if uname -a | grep -i 'microsoft' > /dev/null 2>&1 && uname -a | grep -i 'WSL2' > /dev/null 2>&1
+	then
+		local currentArg
+		local currentResult
+		processedArgs=()
+		for currentArg in "$@"
+		do
+			currentResult=$(wslpath -u "$currentArg")
+			if [[ -e "$currentResult" ]]
+			then
+				true
+			else
+				currentResult="$currentArg"
+			fi
+			
+			processedArgs+=("$currentResult")
+		done
+		
+		
+		"${processedArgs[@]}"
+		return
+	fi
+	
+	"$@"
+}
 
 #Wrapper function to launch arbitrary commands within the ubiquitous_bash environment, including its PATH with scriptBin.
 _bin() {
