@@ -99,8 +99,13 @@ _vector_sch_30MHzLowPass() {
 	
 	cd "$safeTmp"/vector/30MHzLowPass
 	
-	gnetlist -g bom 30MHzLowPass.sch -o 30MHzLowPass_1.bom > /dev/null
-	gnetlist -g bom2 30MHzLowPass.sch -o 30MHzLowPass_2.bom > /dev/null
+	#-o 30MHzLowPass_1.bom
+	gnetlist -g bom 30MHzLowPass.sch > /dev/null
+	mv -f output.net 30MHzLowPass_1.bom
+	
+	#-o 30MHzLowPass_2.bom
+	gnetlist -g bom2 30MHzLowPass.sch > /dev/null
+	mv -f output.net 30MHzLowPass_2.bom
 	
 	local currentHash
 	currentHash=$(cat 30MHzLowPass_1.bom 30MHzLowPass_2.bom | md5sum | head -c 12)
@@ -128,8 +133,13 @@ _vector_sch_vector_usb_led() {
 	
 	cd "$safeTmp"/vector/vector_usb_led
 	
-	gnetlist -g bom usb_led.sch -o usb_led_1.bom > /dev/null 2>&1
-	gnetlist -g bom2 usb_led.sch -o usb_led_2.bom > /dev/null 2>&1
+	#-o usb_led_1.bom
+	gnetlist -g bom usb_led.sch > /dev/null 2>&1
+	mv -f output.net usb_led_1.bom
+	
+	#-o usb_led_2.bom
+	gnetlist -g bom2 usb_led.sch > /dev/null 2>&1
+	mv -f output.net usb_led_2.bom
 	
 	local currentHash
 	currentHash=$(cat usb_led_1.bom usb_led_2.bom | md5sum | head -c 12)

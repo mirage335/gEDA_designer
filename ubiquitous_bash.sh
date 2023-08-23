@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='4011833294'
+export ub_setScriptChecksum_contents='2946823754'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -30799,8 +30799,13 @@ _vector_sch_30MHzLowPass() {
 	
 	cd "$safeTmp"/vector/30MHzLowPass
 	
-	gnetlist -g bom 30MHzLowPass.sch -o 30MHzLowPass_1.bom > /dev/null
-	gnetlist -g bom2 30MHzLowPass.sch -o 30MHzLowPass_2.bom > /dev/null
+	#-o 30MHzLowPass_1.bom
+	gnetlist -g bom 30MHzLowPass.sch > /dev/null
+	mv -f output.net 30MHzLowPass_1.bom
+	
+	#-o 30MHzLowPass_2.bom
+	gnetlist -g bom2 30MHzLowPass.sch > /dev/null
+	mv -f output.net 30MHzLowPass_2.bom
 	
 	local currentHash
 	currentHash=$(cat 30MHzLowPass_1.bom 30MHzLowPass_2.bom | md5sum | head -c 12)
@@ -30828,8 +30833,13 @@ _vector_sch_vector_usb_led() {
 	
 	cd "$safeTmp"/vector/vector_usb_led
 	
-	gnetlist -g bom usb_led.sch -o usb_led_1.bom > /dev/null 2>&1
-	gnetlist -g bom2 usb_led.sch -o usb_led_2.bom > /dev/null 2>&1
+	#-o usb_led_1.bom
+	gnetlist -g bom usb_led.sch > /dev/null 2>&1
+	mv -f output.net usb_led_1.bom
+	
+	#-o usb_led_2.bom
+	gnetlist -g bom2 usb_led.sch > /dev/null 2>&1
+	mv -f output.net usb_led_2.bom
 	
 	local currentHash
 	currentHash=$(cat usb_led_1.bom usb_led_2.bom | md5sum | head -c 12)
@@ -31547,11 +31557,14 @@ _geda_compile_intermediate_materials_sch() {
 		_stop 1
 	fi
 	
-	_messagePlain_probe_cmd gnetlist -g bom2 "$currentInput" -o "$intermediate_materials_sch"/machineBOM-complete.txt
+	#-o "$intermediate_materials_sch"/machineBOM-complete.txt
+	_messagePlain_probe_cmd gnetlist -g bom2 "$currentInput"
+	_messagePlain_probe_cmd mv -f output.net "$intermediate_materials_sch"/machineBOM-complete.txt
 	tail -n +2 "$intermediate_materials_sch"/machineBOM-complete.txt > "$intermediate_materials_sch"/machineBOM-pure.txt
 	
-	_messagePlain_probe_cmd gnetlist -g bom "$currentInput" -o "$intermediate_materials_sch"/"$currentInput_name".bom
-	
+	#-o "$intermediate_materials_sch"/"$currentInput_name".bom
+	_messagePlain_probe_cmd gnetlist -g bom "$currentInput"
+	_messagePlain_probe_cmd mv -f output.net "$intermediate_materials_sch"/"$currentInput_name".bom
 	
 	
 	_geda_compile_intermediate_materials_sch_comprehensive

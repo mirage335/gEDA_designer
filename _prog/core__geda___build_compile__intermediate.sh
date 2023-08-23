@@ -196,11 +196,14 @@ _geda_compile_intermediate_materials_sch() {
 		_stop 1
 	fi
 	
-	_messagePlain_probe_cmd gnetlist -g bom2 "$currentInput" -o "$intermediate_materials_sch"/machineBOM-complete.txt
+	#-o "$intermediate_materials_sch"/machineBOM-complete.txt
+	_messagePlain_probe_cmd gnetlist -g bom2 "$currentInput"
+	_messagePlain_probe_cmd mv -f output.net "$intermediate_materials_sch"/machineBOM-complete.txt
 	tail -n +2 "$intermediate_materials_sch"/machineBOM-complete.txt > "$intermediate_materials_sch"/machineBOM-pure.txt
 	
-	_messagePlain_probe_cmd gnetlist -g bom "$currentInput" -o "$intermediate_materials_sch"/"$currentInput_name".bom
-	
+	#-o "$intermediate_materials_sch"/"$currentInput_name".bom
+	_messagePlain_probe_cmd gnetlist -g bom "$currentInput"
+	_messagePlain_probe_cmd mv -f output.net "$intermediate_materials_sch"/"$currentInput_name".bom
 	
 	
 	_geda_compile_intermediate_materials_sch_comprehensive
