@@ -100,6 +100,8 @@ jobs:
       - name: _get_from_nix
         shell: bash
         run: |
+          ~/core/infrastructure/ubiquitous_bash/ubiquitous_bash.sh _mustHave_nixos
+          [[ -e "$HOME"/.nix-profile/etc/profile.d/nix.sh ]] && . "$HOME"/.nix-profile/etc/profile.d/nix.sh
           ~/core/infrastructure/ubiquitous_bash/ubiquitous_bash.sh _get_from_nix "$USER"
         timeout-minutes: 90
       - uses: actions/checkout@v3
@@ -116,6 +118,7 @@ jobs:
       - name: _test
         shell: bash
         run: |
+          [[ -e "$HOME"/.nix-profile/etc/profile.d/nix.sh ]] && . "$HOME"/.nix-profile/etc/profile.d/nix.sh
           ./ubiquitous_bash.sh _test
 
 
