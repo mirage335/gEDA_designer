@@ -115,7 +115,14 @@ jobs:
         timeout-minutes: 90
 
 
-      - name: _test
+      - name: _test-nixPathPrepend
+        shell: bash
+        run: |
+          [[ -e "$HOME"/.nix-profile/etc/profile.d/nix.sh ]] && . "$HOME"/.nix-profile/etc/profile.d/nix.sh
+          ./ubiquitous_bash.sh _test
+
+
+      - name: _test-nixPathAppend
         shell: bash
         run: |
           [[ -e "$HOME"/.nix-profile/etc/profile.d/nix.sh ]] && . "$HOME"/.nix-profile/etc/profile.d/nix.sh
