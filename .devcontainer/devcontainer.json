@@ -1,0 +1,14 @@
+
+{
+    "name": "gEDA_designer-codespace-basic-dev",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "postCreateCommand": "cd ; wget 'https://raw.githubusercontent.com/mirage335/ubiquitous_bash/master/ubiquitous_bash.sh' ; chmod u+x ./ubiquitous_bash.sh ; ./ubiquitous_bash.sh _setupUbiquitous",
+    "forwardPorts": [51001, 51002]
+}
+
+

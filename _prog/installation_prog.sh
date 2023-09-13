@@ -22,6 +22,9 @@ _vector_pcb_30MHzLowPass() {
 	# 4.2.0
 	[[ "$currentHash" == "f7d076b647a0" ]] && return 0
 	
+	# 4.3.0
+	[[ "$currentHash" == "ff6bf217da69" ]] && return 0
+	
 	
 	_messageFAIL
 	_stop 1
@@ -49,7 +52,8 @@ _vector_pcb_vector_usb_led() {
 	# 4.2.0
 	[[ "$currentHash" == "c80fd39dc332" ]] && return 0
 	
-	
+	# 4.3.0
+	[[ "$currentHash" == "d2808a6d50ff" ]] && return 0
 	
 	_messageFAIL
 	_stop 1

@@ -36,7 +36,7 @@ _ub_cksum_special_derivativeScripts_contents() {
 #export ub_setScriptChecksum_disable='true'
 ( [[ -e "$0".nck ]] || [[ "${BASH_SOURCE[0]}" != "${0}" ]] || [[ "$1" == '--profile' ]] || [[ "$1" == '--script' ]] || [[ "$1" == '--call' ]] || [[ "$1" == '--return' ]] || [[ "$1" == '--devenv' ]] || [[ "$1" == '--shell' ]] || [[ "$1" == '--bypass' ]] || [[ "$1" == '--parent' ]] || [[ "$1" == '--embed' ]] || [[ "$1" == '--compressed' ]] || [[ "$0" == "/bin/bash" ]] || [[ "$0" == "-bash" ]] || [[ "$0" == "/usr/bin/bash" ]] || [[ "$0" == "bash" ]] ) && export ub_setScriptChecksum_disable='true'
 export ub_setScriptChecksum_header='2591634041'
-export ub_setScriptChecksum_contents='4281828970'
+export ub_setScriptChecksum_contents='2049522227'
 
 # CAUTION: Symlinks may cause problems. Disable this test for such cases if necessary.
 # WARNING: Performance may be crucial here.
@@ -225,6 +225,9 @@ then
 fi
 
 
+
+# ATTENTION: NOTICE: https://nixos.wiki/wiki/Locales
+
 # WARNING: May conflict with 'export LANG=C' or similar.
 # Workaround for very minor OS misconfiguration. Setting this variable at all may be undesirable however. Consider enabling and generating all locales with 'sudo dpkg-reconfigure locales' or similar .
 #[[ "$LC_ALL" == '' ]] && export LC_ALL="en_US.UTF-8"
@@ -277,8 +280,8 @@ fi
 
 
 # ATTENTION: Highly irregular. Workaround due to gsch2pcb installed by nix package manager not searching for installed footprints.
-if [[ "$NIX_PROFILES" != "" ]]
-then
+#if [[ "$NIX_PROFILES" != "" ]]
+#then
 	if [[ -e "$HOME"/.nix-profile/bin/gsch2pcb ]] && [[ -e /usr/local/share/pcb/newlib ]] && [[ -e /usr/local/lib/pcb_lib ]]
 	then
 		gsch2pcb() {
@@ -290,7 +293,7 @@ then
 			"$HOME"/.nix-profile/bin/gsch2pcb --elements-dir /usr/share/pcb/pcblib-newlib "$@"
 		}
 	fi
-fi
+#fi
 
 
 # Only production use is Inter-Process Communication (IPC) loops which may be theoretically impossible to make fully deterministic under Operating Systems which do not have hard-real-time kernels and/or may serve an unlimited number of processes.
@@ -1185,8 +1188,8 @@ then
 		_discoverResource-cygwinNative-ProgramFiles 'ykman' 'Yubico/YubiKey Manager' false
 		
 		
-		
-		_discoverResource-cygwinNative-ProgramFiles 'nmap' 'Nmap' false
+		# WARNING: Prefer to avoid 'nmap' for Cygwin/MSW .
+		#_discoverResource-cygwinNative-ProgramFiles 'nmap' 'Nmap' false
 		
 		_discoverResource-cygwinNative-ProgramFiles 'qalc' 'Qalculate' false
 		
@@ -1233,6 +1236,16 @@ fi
 [[ "$profileScriptLocation_new" == 'true' ]] && echo -n '.'
 
 
+
+
+
+
+
+_discoverResource-cygwinNative-nmap() {
+	type nmap > /dev/null 2>&1 && return 0
+	# WARNING: Prefer to avoid 'nmap' for Cygwin/MSW .
+	_if_cygwin && _discoverResource-cygwinNative-ProgramFiles 'nmap' 'Nmap' false
+}
 
 
 
@@ -1308,7 +1321,7 @@ _setup_ubiquitousBash_cygwin_procedure() {
 	cp "$scriptAbsoluteFolder"/fork "$currentCygdriveC_equivalent"/core/infrastructure/ubiquitous_bash/
 	
 	
-	cp "$scriptAbsoluteFolder"/package.tar.xz "$currentCygdriveC_equivalent"/core/infrastructure/ubiquitous_bash/
+	cp "$scriptAbsoluteFolder"/package.tar.xz "$currentCygdriveC_equivalent"/core/infrastructure/ubiquitous_bash/ > /dev/null 2>&1
 	
 	
 	
@@ -1390,7 +1403,14 @@ _setup_ubiquitousBash_cygwin() {
 }
 
 
+_report_setup_ubcp() {
+	local currentCygdriveC_equivalent
+	currentCygdriveC_equivalent="$1"
+	[[ "$currentCygdriveC_equivalent" == "" ]] && currentCygdriveC_equivalent=$(cygpath -S | sed 's/\/Windows\/System32//g')
+	[[ "$1" == "/" ]] && currentCygdriveC_equivalent=$(echo "$PWD" | sed 's/\(\/cygdrive\/[a-zA-Z]*\).*/\1/')
 
+	find /bin/ /usr/bin/ /sbin/ /usr/sbin/ | tee "$currentCygdriveC_equivalent"/core/infrastructure/ubcp-binReport > /dev/null
+}
 
 
 _setup_ubcp_procedure() {
@@ -1427,7 +1447,15 @@ _setup_ubcp_procedure() {
 	cd "$currentCygdriveC_equivalent"/core/infrastructure/
 	
 	#tar -xvf "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.gz
-	tar -xvf "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.xz
+	#tar -xvf "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.xz
+
+	if [[ "$skimfast" != "true" ]]
+	then
+		cat "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.flx | lz4 -d -c | tar -xvf -
+	else
+		cat "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.flx | lz4 -d -c | tar -xf -
+		#tar -xf "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.flx
+	fi
 	
 	_messagePlain_good 'done: _setup_ubcp_procedure: ubcp'
 	sleep 10
@@ -1446,13 +1474,18 @@ _setup_ubcp() {
 	_force_cygwin_symlinks
 	
 	# WARNING: May break if 'mitigation' has not been applied!
-	if ! [[ -e "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.gz ]] && ! [[ -e "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.xz ]] && [[ -e "$scriptLocal"/ubcp/cygwin ]]
+	#! [[ -e "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.gz ]] && 
+	#! [[ -e "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.xz ]] && 
+	if ! [[ -e "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.flx ]] && [[ -e "$scriptLocal"/ubcp/cygwin ]]
 	then
+		export ubPackage_enable_ubcp='true'
 		"$scriptAbsoluteLocation" _package_procedure-cygwinOnly
 	fi
 	
 	"$scriptAbsoluteLocation" _setup_ubcp_procedure "$1"
 	"$scriptAbsoluteLocation" _setup_ubiquitousBash_cygwin_procedure "$1"
+
+	"$scriptAbsoluteLocation" _report_setup_ubcp "$1"
 }
 
 
@@ -1461,9 +1494,8 @@ _setup_ubcp() {
 
 
 _mitigate-ubcp_rewrite_procedure() {
-	_messagePlain_nominal 'init: _mitigate-ubcp_rewrite_procedure'
+	[[ "$skimfast" != "true" ]] && _messagePlain_nominal 'init: _mitigate-ubcp_rewrite_procedure'
 	[[ "$currentPWD" != "" ]] && cd "$currentPWD"
-	
 	local currentRoot=$(_getAbsoluteLocation "$PWD")
 	
 	local currentLink="$1"
@@ -1474,11 +1506,11 @@ _mitigate-ubcp_rewrite_procedure() {
 	local currentLinkDirective=$(readlink "$1")
 	
 	
-	_messagePlain_probe_var currentRoot
-	_messagePlain_probe_var currentLink
-	_messagePlain_probe_var currentLinkFile
-	_messagePlain_probe_var currentLinkFolder
-	_messagePlain_probe_var currentLinkDirective
+	[[ "$skimfast" != "true" ]] && _messagePlain_probe_var currentRoot
+	[[ "$skimfast" != "true" ]] && _messagePlain_probe_var currentLink
+	[[ "$skimfast" != "true" ]] && _messagePlain_probe_var currentLinkFile
+	[[ "$skimfast" != "true" ]] && _messagePlain_probe_var currentLinkFolder
+	[[ "$skimfast" != "true" ]] && _messagePlain_probe_var currentLinkDirective
 	
 	[[ "$currentLinkDirective" == '/proc/'* ]] && return 0
 	[[ "$currentLinkDirective" == '/dev/'* ]] && return 0
@@ -1500,7 +1532,7 @@ _mitigate-ubcp_rewrite_procedure() {
 	else
 		while [[ "$currentMatch" == 'false' ]] && [[ "$currentIterations" -lt 14 ]]
 		do
-			_messagePlain_probe "$currentLinkFolder"/"$currentDots"
+			[[ "$skimfast" != "true" ]] && _messagePlain_probe "$currentLinkFolder"/"$currentDots"
 			currentLinkFolder_eval=$(_getAbsoluteLocation "$currentLinkFolder"/"$currentDots")
 			[[ "$currentLinkFolder_eval" == "$currentRoot" ]] && currentMatch='true'
 			
@@ -1518,7 +1550,7 @@ _mitigate-ubcp_rewrite_procedure() {
 	
 	
 	
-	_messagePlain_probe_var currentRelativeRoot
+	[[ "$skimfast" != "true" ]] && _messagePlain_probe_var currentRelativeRoot
 	
 	
 	local processedLinkDirective
@@ -1529,7 +1561,7 @@ _mitigate-ubcp_rewrite_procedure() {
 		
 	fi
 	
-	_messagePlain_probe_var processedLinkDirective
+	[[ "$skimfast" != "true" ]] && _messagePlain_probe_var processedLinkDirective
 	
 	
 	
@@ -1537,7 +1569,7 @@ _mitigate-ubcp_rewrite_procedure() {
 	then
 		cd "$currentLinkFolder"
 		
-		ls -l "$processedLinkDirective"
+		[[ "$skimfast" != "true" ]] && ls -l "$processedLinkDirective"
 		
 		
 		# ATTENTION: Forces scenario '2'!
@@ -1556,8 +1588,8 @@ _mitigate-ubcp_rewrite_procedure() {
 		
 		ln -sf "$processedLinkDirective" "$currentLinkFolder"/"$currentLinkFile"
 		
-		ls -ld "$currentLinkFolder"/"$currentLinkFile"
-		[[ -d "$currentLinkFolder"/"$currentLinkFile" ]] && ls -l "$currentLinkFolder"/"$currentLinkFile"
+		[[ "$skimfast" != "true" ]] && ls -ld "$currentLinkFolder"/"$currentLinkFile"
+		[[ "$skimfast" != "true" ]] && [[ -d "$currentLinkFolder"/"$currentLinkFile" ]] && ls -l "$currentLinkFolder"/"$currentLinkFile"
 		
 		#rm -f "$currentLink"
 		##currentLink=$(_getAbsoluteLocation "$currentLink)
@@ -1575,17 +1607,17 @@ _mitigate-ubcp_rewrite_procedure() {
 	then
 		cd "$currentLinkFolder"
 		
-		ls -ld "$currentLinkFolder"/"$currentLinkFile"
+		[[ "$skimfast" != "true" ]] && ls -ld "$currentLinkFolder"/"$currentLinkFile"
 		
 		
 		
-		_messagePlain_nominal 'directive: replace: true'
+		[[ "$skimfast" != "true" ]] && _messagePlain_nominal 'directive: replace: true'
 		cp -L -R --preserve=all "$currentLinkFolder"/"$currentLinkFile" "$currentLinkFolder"/"$currentLinkFile".replace
 		rm -f "$currentLinkFolder"/"$currentLinkFile"
 		mv "$currentLinkFolder"/"$currentLinkFile".replace "$currentLinkFolder"/"$currentLinkFile"
 		
-		ls -ld "$currentLinkFolder"/"$currentLinkFile"
-		[[ -d "$currentLinkFolder"/"$currentLinkFile" ]] && ls -l "$currentLinkFolder"/"$currentLinkFile"
+		[[ "$skimfast" != "true" ]] && ls -ld "$currentLinkFolder"/"$currentLinkFile"
+		[[ "$skimfast" != "true" ]] && [[ -d "$currentLinkFolder"/"$currentLinkFile" ]] && ls -l "$currentLinkFolder"/"$currentLinkFile"
 		
 		cd "$outerPWD"
 	fi
@@ -1651,6 +1683,16 @@ _mitigate-ubcp_rewrite_sequence() {
 	##find "$2" -type l -exec bash -c '_mitigate-ubcp_rewrite_procedure "$1"' _ {} \;
 	
 	
+	#_experimentInteractive ()
+	#{
+		#echo begin: "$@";
+		#sleep 1;
+		#echo end
+	#}
+	#export -f _experimentInteractive
+	#seq 1 500 | xargs -x -s 4096 -L 6 -P 4 bash -c 'echo begin: "$@" ; sleep 1 ; echo end' _
+	#seq 1 500 | xargs -x -s 4096 -L 6 -P 4 bash -c '_experimentInteractive "$@"' _
+
 	
 	# WARNING: Diagnostic output will be corrupted by parallelism.
 	# ATTENTION: Expect as much as 4x as many CPU threads may be saturated due to MSW (MSW, NOT Cygwin) inefficiencies.
@@ -1659,14 +1701,26 @@ _mitigate-ubcp_rewrite_sequence() {
 	# https://serverfault.com/questions/193319/a-better-unix-find-with-parallel-processing
 	# https://stackoverflow.com/questions/11003418/calling-shell-functions-with-xargs
 	export -f "_mitigate-ubcp_rewrite_parallel"
+	find "$2" -type l -print0 | xargs -0 -x -s 4096 -L 6 -P $(nproc) bash -c '_mitigate-ubcp_rewrite_parallel "$@"' _
 	#find "$2" -type l -print0 | xargs -0 -n 1 -P 4 -I {} bash -c '_mitigate-ubcp_rewrite_parallel "$@"' _ {}
-	find "$2" -type l -print0 | xargs -0 -n 1 -P 4 -I {} bash -c '_mitigate-ubcp_rewrite_procedure "$@"' _ {}
+	#find "$2" -type l -print0 | xargs -0 -n 1 -P 4 -I {} bash -c '_mitigate-ubcp_rewrite_procedure "$@"' _ {}
 	
 	return 0
 }
 
 _mitigate-ubcp_rewrite() {
 	"$scriptAbsoluteLocation" _mitigate-ubcp_rewrite_sequence "$@"
+
+	# CAUTION: This may not catch mitigate failure . The actual issue with 'getconf' was removal of the 'ARG_MAX' value , which was not caused by mitigate failure .
+	if [[ ! -e /usr/bin/getconf ]]
+	then
+		_messagePlain_bad 'missing: bad: /usr/bin/getconf'
+		echo 'Usually, this is a symlink, if missing, indicative of failed symlink mitigation due to xargs parameter length or parallelism failure.'
+		_messageFAIL
+		_stop 1
+		return 1
+	fi
+	return 0
 }
 
 
@@ -1765,6 +1819,14 @@ _package_procedure-cygwinOnly() {
 	rm -f "$scriptLocal"/package_ubcp-cygwinOnly.tar.xz > /dev/null 2>&1
 	rm -f "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.xz > /dev/null 2>&1
 	
+	rm -f "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar > /dev/null 2>&1
+	rm -f "$scriptLocal"/package_ubcp-cygwinOnly.tar > /dev/null 2>&1
+	rm -f "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar > /dev/null 2>&1
+	
+	rm -f "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar.flx > /dev/null 2>&1
+	rm -f "$scriptLocal"/package_ubcp-cygwinOnly.tar.flx > /dev/null 2>&1
+	rm -f "$scriptLocal"/ubcp/package_ubcp-cygwinOnly.tar.flx > /dev/null 2>&1
+	
 	if [[ "$ubPackage_enable_ubcp" == 'true' ]]
 	then
 		_package_ubcp_copy "$@"
@@ -1778,11 +1840,23 @@ _package_procedure-cygwinOnly() {
 	! cd "$safeTmp"/package/"$objectName"/_local && _stop 1
 	
 	#tar -czvf "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar.gz .
-	env XZ_OPT=-5 tar -cJvf "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar.xz .
+	#env XZ_OPT="-5 -T0" tar -cJvf "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar.xz .
+	#env XZ_OPT="-0 -T0" tar -cJvf "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar.xz .
+	#tar -cvf "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar .
+
+	if [[ "$skimfast" != "true" ]]
+	then
+		tar -cvf - . | lz4 -z --fast=1 - "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar.flx
+	else
+		tar -cf - . | lz4 -z --fast=1 - "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar.flx
+		#tar -cf "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar.flx .
+	fi
 	
 	mkdir -p "$scriptLocal"/ubcp/
 	mv "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar.gz "$scriptLocal"/ubcp/ > /dev/null 2>&1
-	mv "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar.xz "$scriptLocal"/ubcp/
+	mv "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar.xz "$scriptLocal"/ubcp/ > /dev/null 2>&1
+	mv "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar "$scriptLocal"/ubcp/ > /dev/null 2>&1
+	mv "$scriptAbsoluteFolder"/package_ubcp-cygwinOnly.tar.flx "$scriptLocal"/ubcp/
 	
 	_messagePlain_request 'request: review contents of _local/ubcp/cygwin/home and similar directories'
 	sleep 20
@@ -2395,6 +2469,12 @@ _safeRMR() {
 			safeToRM="true"
 		fi
 	fi
+
+	if [[ -e "$HOME"/.ubtmp ]] && uname -a | grep -i 'microsoft' > /dev/null 2>&1 && uname -a | grep -i 'WSL2' > /dev/null 2>&1
+	then
+		[[ "$1" == "$HOME"/.ubtmp/* ]] && safeToRM="true"
+		[[ "$1" == "./"* ]] && [[ "$PWD" == "$HOME"/.ubtmp* ]] && safeToRM="true"
+	fi
 	
 	
 	[[ "$safeToRM" == "false" ]] && return 1
@@ -2491,6 +2571,12 @@ _safePath() {
 		then
 			safeToRM="true"
 		fi
+	fi
+
+	if [[ -e "$HOME"/.ubtmp ]] && uname -a | grep -i 'microsoft' > /dev/null 2>&1 && uname -a | grep -i 'WSL2' > /dev/null 2>&1
+	then
+		[[ "$1" == "$HOME"/.ubtmp/* ]] && safeToRM="true"
+		[[ "$1" == "./"* ]] && [[ "$PWD" == "$HOME"/.ubtmp* ]] && safeToRM="true"
 	fi
 	
 	
@@ -4436,7 +4522,8 @@ _testFindPort() {
 	# WARNING: Not yet relying exclusively on 'netstat' - recommend continuing to install 'nmap' for Cygwin port range detection (and also for _waitPort) .
 	if uname -a | grep -i cygwin > /dev/null 2>&1
 	then
-		! type nmap > /dev/null 2>&1 && echo "missing socket detection: nmap" && _stop 1
+		# ATTENTION: Use of nmap on Cygwin/MSW is apparently unnecessary. Beginning to disable for this use case.
+		#! type nmap > /dev/null 2>&1 && echo "missing socket detection: nmap" && _stop 1
 		! type netstat | grep cygdrive > /dev/null 2>&1 && echo "missing socket detection: netstat" && _stop 1
 		return 0
 	fi
@@ -4489,7 +4576,7 @@ _checkPort_local() {
 		return $?
 	fi
 	
-	if type nmap
+	if type nmap > /dev/null 2>&1 && ! uname -a | grep -i cygwin > /dev/null
 	then
 		nmap --host-timeout 0.1 -Pn localhost -p "$1" 2> /dev/null | grep open > /dev/null 2>&1
 		return $?
@@ -4587,14 +4674,25 @@ _findPort() {
 }
 
 _test_waitport() {
+	_discoverResource-cygwinNative-nmap
+	
+	if _if_cygwin && ! type nmap > /dev/null 2>&1
+	then
+		echo 'warn: missing: nmap'
+	else
 	_getDep nmap
+	fi
 }
 
 _showPort_ipv6() {
+	_discoverResource-cygwinNative-nmap
+
 	nmap -6 --host-timeout "$netTimeout" -Pn "$1" -p "$2" 2> /dev/null
 }
 
 _showPort_ipv4() {
+	_discoverResource-cygwinNative-nmap
+	
 	nmap --host-timeout "$netTimeout" -Pn "$1" -p "$2" 2> /dev/null
 }
 
@@ -5184,14 +5282,17 @@ _fetchDep_debianBookworm_special() {
 		wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo -n apt-key add -
 		
 		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get -y update
-		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms virtualbox-6.1
+		#sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms virtualbox-6.1
+		sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms virtualbox-7.0
 		
 		# https://www.virtualbox.org/ticket/20949
 		if ! type -p virtualbox > /dev/null 2>&1 && ! type -p VirtualBox > /dev/null 2>&1
 		then
-			curl -L "https://download.virtualbox.org/virtualbox/6.1.34/virtualbox-6.1_6.1.34-150636.1~Debian~bookworm_amd64.deb" -o "$safeTmp"/"virtualbox-6.1_6.1.34-150636.1~Debian~bookworm_amd64.deb"
+			#curl -L "https://download.virtualbox.org/virtualbox/6.1.34/virtualbox-6.1_6.1.34-150636.1~Debian~bookworm_amd64.deb" -o "$safeTmp"/"virtualbox-6.1_6.1.34-150636.1~Debian~bookworm_amd64.deb"
+			curl -L "https://download.virtualbox.org/virtualbox/7.0.10/virtualbox-7.0_7.0.10-158379~Debian~bookworm_amd64.deb" -o "$safeTmp"/"virtualbox-7.0_7.0.10-158379~Debian~bookworm_amd64.deb"
 			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y dkms
-			yes | sudo -n dpkg -i "$safeTmp"/"virtualbox-6.1_6.1.34-150636.1~Debian~bookworm_amd64.deb"
+			#yes | sudo -n dpkg -i "$safeTmp"/"virtualbox-6.1_6.1.34-150636.1~Debian~bookworm_amd64.deb"
+			yes | sudo -n dpkg -i "$safeTmp"/"virtualbox-7.0_7.0.10-158379~Debian~bookworm_amd64.deb"
 			sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install --install-recommends -y -f
 		fi
 		
@@ -6863,6 +6964,9 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall wmctrl xprintidle
 
 
+	_getMost_backend_aptGetInstall dbus-x11
+
+
 	_getMost_backend_aptGetInstall gnulib
 
 	_getMost_backend_aptGetInstall libtool
@@ -6991,6 +7095,15 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall libusb-1.0
 
 
+
+	_getMost_backend_aptGetInstall ddd
+	_getMost_backend_aptGetInstall gdb
+	_getMost_backend_aptGetInstall libbabeltrace1
+	_getMost_backend_aptGetInstall libc6-dbg
+	_getMost_backend_aptGetInstall libsource-highlight-common
+	_getMost_backend_aptGetInstall libsource-highlight4v5
+
+
 	
 	# ATTENTION: ONLY change (eg. to 'remove') if needed to ensure a kernel is installed AND custom kernel is not in use.
 	_getMost_backend_aptGetInstall linux-image-amd64
@@ -6999,6 +7112,8 @@ _getMost_debian11_install() {
 	then
 		_getMost_backend_aptGetInstall linux-headers-$(uname -r)
 	fi
+
+	_getMost_backend_aptGetInstall initramfs-tools
 	
 	_getMost_backend_aptGetInstall net-tools wireless-tools rfkill
 	
@@ -7291,6 +7406,7 @@ _getMost_debian11_install() {
 	_getMost_backend_aptGetInstall debhelper
 	
 	_getMost_backend_aptGetInstall p7zip
+	_getMost_backend_aptGetInstall p7zip-full
 	_getMost_backend_aptGetInstall nsis
 
 	_getMost_backend_aptGetInstall dos2unix
@@ -7434,6 +7550,22 @@ _getMost_debian12() {
 	_getMost_debian12_aptSources "$@"
 	
 	_getMost_debian12_install "$@"
+
+
+
+	_here_opensslConfig_legacy | _getMost_backend tee /etc/ssl/openssl_legacy.cnf > /dev/null 2>&1
+
+    if ! _getMost_backend grep 'openssl_legacy' /etc/ssl/openssl.cnf > /dev/null 2>&1
+    then
+        _getMost_backend cp -f /etc/ssl/openssl.cnf /etc/ssl/openssl.cnf.orig
+        echo '
+
+
+.include = /etc/ssl/openssl_legacy.cnf
+
+' | _getMost_backend cat /etc/ssl/openssl.cnf.orig - | _getMost_backend tee /etc/ssl/openssl.cnf > /dev/null 2>&1
+    fi
+	
 	
 	
 	_getMost_backend apt-get remove --autoremove -y plasma-discover
@@ -7915,6 +8047,9 @@ _getMinimal_cloud() {
 	_getMost_backend_aptGetInstall dos2unix
 
 
+	_getMost_backend_aptGetInstall xxd
+
+
 	_getMost_backend_aptGetInstall debhelper
 	
 	_getMost_backend_aptGetInstall p7zip
@@ -8034,6 +8169,21 @@ _getMinimal_cloud() {
 	#"$scriptAbsoluteLocation" _test
 	#export devfast=
 	#unset devfast
+
+
+	_messagePlain_probe _custom_splice_opensslConfig
+	_here_opensslConfig_legacy | _getMost_backend tee /etc/ssl/openssl_legacy.cnf > /dev/null 2>&1
+
+    if ! _getMost_backend grep 'openssl_legacy' /etc/ssl/openssl.cnf > /dev/null 2>&1
+    then
+        _getMost_backend cp -f /etc/ssl/openssl.cnf /etc/ssl/openssl.cnf.orig
+        echo '
+
+
+.include = /etc/ssl/openssl_legacy.cnf
+
+' | _getMost_backend cat /etc/ssl/openssl.cnf.orig - | _getMost_backend tee /etc/ssl/openssl.cnf > /dev/null 2>&1
+    fi
 	
 	
 	return 0
@@ -8063,6 +8213,13 @@ _get_from_nix-user() {
 	# . "$HOME"/.nix-profile/etc/profile.d/nix.sh
 
 
+	#_nix_fetch_alternatives
+	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c '[[ ! -e geda-gaf-1.10.2.tar.gz ]] && wget ftp.geda-project.org/geda-gaf/stable/v1.10/1.10.2/geda-gaf-1.10.2.tar.gz'
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c '[[ ! -e geda-gaf-1.10.2.tar.gz ]] && wget https://web.archive.org/web/20230413214011/http://ftp.geda-project.org/geda-gaf/stable/v1.10/1.10.2/geda-gaf-1.10.2.tar.gz'
+	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c '[[ ! -e geda-gaf-1.10.2.tar.gz ]] && wget https://web.archive.org/web/http://ftp.geda-project.org/geda-gaf/stable/v1.10/1.10.2/geda-gaf-1.10.2.tar.gz'
+	#_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c '[[ ! -e geda-gaf-1.10.2.tar.gz ]] && wget https://github.com/soaringDistributions/ubDistBuild_bundle/raw/main/geda-gaf/geda-gaf-1.10.2.tar.gz'
+
+	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'nix-prefetch-url file://"$(~/.ubcore/ubiquitous_bash/ubiquitous_bash.sh _getAbsoluteLocation ./geda-gaf-1.10.2.tar.gz)"'
 
 	#_nix_update
 	_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'nix-channel --list'
@@ -8119,11 +8276,11 @@ _get_from_nix-user() {
 	currentDerivationPath_gsch2pcb=$(_getMost_backend sudo -n -u "$currentUser" /bin/bash -l -c 'readlink -f "$(type -p gsch2pcb)"')
 	currentDerivationPath_gsch2pcb=$(echo "$currentDerivationPath_gsch2pcb" | sed 's/\(.*\)\/bin\/gsch2pcb.*/\1/')
 
-	_getMost_backend cp -a "$currentDerivationPath_pcb"/share/pcb "$currentDerivationPath_gsch2pcb"/share/
-	_getMost_backend cp -a "$currentDerivationPath_pcb"/share/gEDA "$currentDerivationPath_gsch2pcb"/share/
+	_getMost_backend sudo -n cp -a "$currentDerivationPath_pcb"/share/pcb "$currentDerivationPath_gsch2pcb"/share/
+	_getMost_backend sudo -n cp -a "$currentDerivationPath_pcb"/share/gEDA "$currentDerivationPath_gsch2pcb"/share/
 
 	# ATTENTION: Unusual .
-	_getMost_backend sed -i 's/import errno, os, stat, tempfile$/& , sys/' "$currentDerivationPath_gsch2pcb"/lib/python2.7/site-packages/xorn/fileutils.py
+	_getMost_backend sudo -n sed -i 's/import errno, os, stat, tempfile$/& , sys/' "$currentDerivationPath_gsch2pcb"/lib/python2.7/site-packages/xorn/fileutils.py
 
 	# DOCUMENTATION - interesting copilot suggestions that may or may not be relevant
 	# --option allow-substitutes false --option allow-unsafe-native-code-during-evaluation true --option substituters 'https://cache.nixos.org https://hydra.iohk.io' --option trusted-public-keys 'cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ='
@@ -8148,6 +8305,59 @@ _get_from_nix() {
 
 
 # NOTICE: getMost_special.sh will be included if either getMost.sh or gitMinimal.sh are included
+
+
+
+# echo -n | openssl dgst -whirlpool -binary - | xxd -p -c 256
+
+# https://github.com/openssl/openssl/issues/10145#issuecomment-1054074144
+# https://github.com/openssl/openssl/issues/5118#issuecomment-1707860097
+# https://gist.github.com/rdh27785/97210d439a280063bd768006450c435d#file-openssl-cnf-diff
+# https://gist.githubusercontent.com/rdh27785/97210d439a280063bd768006450c435d/raw/3789f079442d35c2ae2dc0ff06c314e7169adf7b/openssl.cnf.diff
+# https://help.heroku.com/88GYDTB2/how-do-i-configure-openssl-to-allow-the-use-of-legacy-cryptographic-algorithms
+# https://wiki.openssl.org/index.php/OpenSSL_3.0
+_here_opensslConfig_legacy() {
+	cat << 'CZXWXcRMTo8EmM8i4d'
+
+openssl_conf = openssl_init
+
+[openssl_init]
+providers = provider_sect
+
+[provider_sect]
+default = default_sect
+legacy = legacy_sect
+
+[default_sect]
+activate = 1
+
+[legacy_sect]
+activate = 1
+
+CZXWXcRMTo8EmM8i4d
+}
+_custom_splice_opensslConfig() {
+	#local functionEntryPWD
+	#functionEntryPWD="$PWD"
+
+	#cd /
+	_here_opensslConfig_legacy | sudo -n tee /etc/ssl/openssl_legacy.cnf > /dev/null 2>&1
+
+    if ! sudo -n grep 'openssl_legacy' /etc/ssl/openssl.cnf > /dev/null 2>&1
+    then
+        sudo -n cp -f /etc/ssl/openssl.cnf /etc/ssl/openssl.cnf.orig
+        echo '
+
+
+.include = /etc/ssl/openssl_legacy.cnf
+
+' | sudo -n cat /etc/ssl/openssl.cnf.orig - | sudo -n tee /etc/ssl/openssl.cnf > /dev/null 2>&1
+    fi
+
+	#cd "$functionEntryPWD"
+}
+
+
 
 
 
@@ -10940,9 +11150,11 @@ _fakeHome() {
 	fakeHomeENVvars+=(USER="$USER")
 	
 	
+	[[ "$TMPDIR" != "" ]] && fakeHomeENVvars+=(TMPDIR="$TMPDIR")
 	#fakeHomeENVvars+=( SSH_AUTH_SOCK="$SSH_AUTH_SOCK" SSH_AGENT_PID="$SSH_AGENT_PID" GPG_AGENT_INFO="$GPG_AGENT_INFO" )
-	fakeHomeENVvars+=(SESSION_MANAGER="$SESSION_MANAGER" WINDOWID="$WINDOWID" QT_ACCESSIBILITY="$QT_ACCESSIBILITY" COLORTERM="$COLORTERM" XDG_SESSION_PATH="$XDG_SESSION_PATH" LANGUAGE="$LANGUAGE"  SHELL_SESSION_ID="$SHELL_SESSION_ID" DESKTOP_SESSION="$DESKTOP_SESSION" XCURSOR_SIZE="$XCURSOR_SIZE" GTK_MODULES="$GTK_MODULES" XDG_SEAT="$XDG_SEAT" XDG_SESSION_DESKTOP="$XDG_SESSION_DESKTOP" XDG_SESSION_TYPE="$XDG_SESSION_TYPE" XDG_CURRENT_DESKTOP="$XDG_CURRENT_DESKTOP" KONSOLE_DBUS_SERVICE="$KONSOLE_DBUS_SERVICE" PYTHONSTARTUP="$PYTHONSTARTUP" KONSOLE_DBUS_SESSION="$KONSOLE_DBUS_SESSION" PROFILEHOME="$PROFILEHOME" TMPDIR="$TMPDIR" XDG_SEAT_PATH="$XDG_SEAT_PATH" KDE_SESSION_UID="$KDE_SESSION_UID" XDG_SESSION_CLASS="$XDG_SESSION_CLASS" COLORFGBG="$COLORFGBG" KDE_SESSION_VERSION="$KDE_SESSION_VERSION" SHLVL="$SHLVL" LC_MEASUREMENT="$LC_MEASUREMENT" XDG_VTNR="$XDG_VTNR" XDG_SESSION_ID="$XDG_SESSION_ID" GS_LIB="$GS_LIB" XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" LC_TIME="$LC_TIME" QT_AUTO_SCREEN_SCALE_FACTOR="$QT_AUTO_SCREEN_SCALE_FACTOR" XCURSOR_THEME="$XCURSOR_THEME" KDE_FULL_SESSION="$KDE_FULL_SESSION" KONSOLE_PROFILE_NAME="$KONSOLE_PROFILE_NAME" DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" KONSOLE_DBUS_WINDOW="$KONSOLE_DBUS_WINDOW" LS_COLORS="$LS_COLORS")
+	fakeHomeENVvars+=(SESSION_MANAGER="$SESSION_MANAGER" WINDOWID="$WINDOWID" QT_ACCESSIBILITY="$QT_ACCESSIBILITY" COLORTERM="$COLORTERM" XDG_SESSION_PATH="$XDG_SESSION_PATH" LANGUAGE="$LANGUAGE"  SHELL_SESSION_ID="$SHELL_SESSION_ID" DESKTOP_SESSION="$DESKTOP_SESSION" XCURSOR_SIZE="$XCURSOR_SIZE" GTK_MODULES="$GTK_MODULES" XDG_SEAT="$XDG_SEAT" XDG_SESSION_DESKTOP="$XDG_SESSION_DESKTOP" XDG_SESSION_TYPE="$XDG_SESSION_TYPE" XDG_CURRENT_DESKTOP="$XDG_CURRENT_DESKTOP" KONSOLE_DBUS_SERVICE="$KONSOLE_DBUS_SERVICE" PYTHONSTARTUP="$PYTHONSTARTUP" KONSOLE_DBUS_SESSION="$KONSOLE_DBUS_SESSION" PROFILEHOME="$PROFILEHOME" XDG_SEAT_PATH="$XDG_SEAT_PATH" KDE_SESSION_UID="$KDE_SESSION_UID" XDG_SESSION_CLASS="$XDG_SESSION_CLASS" COLORFGBG="$COLORFGBG" KDE_SESSION_VERSION="$KDE_SESSION_VERSION" SHLVL="$SHLVL" LC_MEASUREMENT="$LC_MEASUREMENT" XDG_VTNR="$XDG_VTNR" XDG_SESSION_ID="$XDG_SESSION_ID" GS_LIB="$GS_LIB" XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" LC_TIME="$LC_TIME" QT_AUTO_SCREEN_SCALE_FACTOR="$QT_AUTO_SCREEN_SCALE_FACTOR" XCURSOR_THEME="$XCURSOR_THEME" KDE_FULL_SESSION="$KDE_FULL_SESSION" KONSOLE_PROFILE_NAME="$KONSOLE_PROFILE_NAME" DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" KONSOLE_DBUS_WINDOW="$KONSOLE_DBUS_WINDOW" LS_COLORS="$LS_COLORS")
 	
+	fakeHomeENVvars+=(QT_QPA_PLATFORMTHEME="$QT_QPA_PLATFORMTHEME")
 	
 	
 	if type dbus-run-session > /dev/null 2>&1 && [[ "$fakeHome_dbusRunSession_DISABLE" != "true" ]]
@@ -11980,7 +12192,7 @@ _here_bootdisc_startup_xdg() {
 cat << 'CZXWXcRMTo8EmM8i4d'
 [Desktop Entry]
 Comment=
-Exec=sudo -n mount -t iso9660 -o ro,nofail LABEL=uk4uPhB663kVcygT0q /media/bootdisc ; sudo -n /media/bootdisc/rootnix.sh ; /media/bootdisc/cmd.sh
+Exec=sudo -n mount -t iso9660 -o ro,nofail LABEL=uk4uPhB663kVcygT0q /media/bootdisc > /dev/null ; sudo -n /media/bootdisc/rootnix.sh > /dev/null ; /media/bootdisc/cmd.sh > /dev/null
 GenericName=
 Icon=exec
 MimeType=
@@ -11990,6 +12202,47 @@ StartupNotify=false
 Terminal=false
 TerminalOptions=
 Type=Application
+CZXWXcRMTo8EmM8i4d
+}
+
+_here_bootdisc_startup_systemd() {
+    cat << CZXWXcRMTo8EmM8i4d
+[Unit]
+After=xdg-desktop-autostart.target
+
+[Install]
+WantedBy=xdg-desktop-autostart.target
+
+[Service]
+Type=oneshot
+ExecStart="$1"/.config/startup.sh
+CZXWXcRMTo8EmM8i4d
+}
+
+_here_bootdisc_startup_script() {
+    cat << CZXWXcRMTo8EmM8i4d
+#!/usr/bin/env bash
+#export QT_QPA_PLATFORMTHEME= ; unset QT_QPA_PLATFORMTHEME ; export LANG="C"
+#export DESKTOP_SESSION=plasma
+#bash "$scriptAbsoluteLocation" _wsl_desktop-waitUp_wmctrl ; sleep 0.6
+export LANG="C"
+CZXWXcRMTo8EmM8i4d
+
+#dbus-run-session
+#_safeEcho_newline 'exec '"$@"' &'
+_safeEcho_newline 'sudo -n mount -t iso9660 -o ro,nofail LABEL=uk4uPhB663kVcygT0q /media/bootdisc > /dev/null ; sudo -n /media/bootdisc/rootnix.sh > /dev/null ; /media/bootdisc/cmd.sh > /dev/null'
+
+    cat << CZXWXcRMTo8EmM8i4d
+#disown -h \$!
+disown
+disown -a -h -r
+disown -a -r
+#rm -f "\$HOME"/.config/plasma-workspace/env/startup.sh
+#rm -f "\$HOME"/.config/startup.sh
+#sudo -n rm -f /etc/xdg/autostart/startup.desktop
+#rm -f "\$HOME"/.config/systemd/user/bootdiscStartup.service
+#bash "$scriptAbsoluteLocation" _wsl_desktop-waitDown_wmctrl
+#currentStopJobs=\$(jobs -p -r 2> /dev/null) ; [[ "\$displayStopJobs" != "" ]] && kill \$displayStopJobs > /dev/null 2>&1
 CZXWXcRMTo8EmM8i4d
 }
 
@@ -13552,7 +13805,7 @@ _createVMimage() {
 	
 	_messageNormal 'create: vm.img'
 	
-	export vmSize=23296
+	export vmSize=26572
 	_createRawImage
 	
 	
@@ -13597,26 +13850,56 @@ _createVMimage() {
 	
 	
 	# EFI
-	#sudo -n parted --script "$vmImageFile" 'mkpart EFI fat32 '"2"'MiB '"514"'MiB'
-	sudo -n parted --script "$vmImageFile" 'mkpart EFI fat32 '"2"'MiB '"74"'MiB'
+	##sudo -n parted --script "$vmImageFile" 'mkpart EFI fat32 '"2"'MiB '"514"'MiB'
+	#sudo -n parted --script "$vmImageFile" 'mkpart EFI fat32 '"2"'MiB '"74"'MiB'
+	sudo -n parted --script "$vmImageFile" 'mkpart EFI fat32 '"2"'MiB '"42"'MiB'
 	sudo -n parted --script "$vmImageFile" 'set 2 msftdata on'
 	sudo -n parted --script "$vmImageFile" 'set 2 boot on'
 	sudo -n parted --script "$vmImageFile" 'set 2 esp on'
 	
 	
 	# Swap
-	#sudo -n parted --script "$vmImageFile" 'mkpart primary '"514"'MiB '"5633"'MiB'
-	#sudo -n parted --script "$vmImageFile" 'mkpart primary '"514"'MiB '"3073"'MiB'
-	sudo -n parted --script "$vmImageFile" 'mkpart primary '"74"'MiB '"98"'MiB'
+	##sudo -n parted --script "$vmImageFile" 'mkpart primary '"514"'MiB '"5633"'MiB'
+	##sudo -n parted --script "$vmImageFile" 'mkpart primary '"514"'MiB '"3073"'MiB'
+	#sudo -n parted --script "$vmImageFile" 'mkpart primary '"74"'MiB '"98"'MiB'
+	sudo -n parted --script "$vmImageFile" 'mkpart primary '"42"'MiB '"44"'MiB'
 	
 	
 	# Boot
-	sudo -n parted --script "$vmImageFile" 'mkpart primary '"98"'MiB '"610"'MiB'
+	#sudo -n parted --script "$vmImageFile" 'mkpart primary '"98"'MiB '"610"'MiB'
+	sudo -n parted --script "$vmImageFile" 'mkpart primary '"44"'MiB '"384"'MiB'
 	
 	
 	# Root
-	sudo -n parted --script "$vmImageFile" 'mkpart primary '"610"'MiB '"23295"'MiB'
-	
+	# WARNING: Adjust vmSize to match +1MiB .
+	# Try to keep this <23841MiB-256MiB-1MiB ( ie. <23584MiB ) (exactly 25000000000Bytes is 23841MiB ) . In practice, compression will obviate this issue, and the Live ISO may be more complete (ie. including 'accessories') for recovery purposes .
+	# https://www.mail-archive.com/kde-bugs-dist@kde.org/msg618604.html
+	#  '25025315816 bytes'   ...   'difference between the available space at the start and at the end is exactly 256M'
+	# http://fy.chalmers.se/~appro/linux/DVD+RW/Blu-ray/
+	#  '256MB'
+	# https://forum.blu-ray.com/showthread.php?t=76407
+	# https://forum.imgburn.com/topic/23120-overburn-or-truncate-for-blu-rays/
+	# Try to keep this <23GiB-1MiB . Prefer to fit two copies within 46GiB ( eg. 23296MiB == 22.75GiB ) .
+	# Try to keep this <28GiB-1MiB . Prefer to fit at least 18GiB (compressed rootfs tar, squashfs, etc) plus this 28GiB .
+	# Expect 25.75GiB may suffice ( ie. 22.75GiB+5GiB-2GiB ) (assuming 22.75GiB may have been sufficient by ~5GiB until another ~5GiB was added, and from there ~2GiB may have already been freed by other changes) .
+	# Expect 27.75GiB may suffice ( ie. 22.75GiB+5GiB-2GiB ) (assuming 22.75GiB may have been sufficient by ~5GiB until another ~5GiB was added) .
+
+	# Tested successfully.
+	# 22.75GiB-1MiB
+	#sudo -n parted --script "$vmImageFile" 'mkpart primary '"610"'MiB '"23295"'MiB'
+
+	# 22.95GiB-1MiB
+	##sudo -n parted --script "$vmImageFile" 'mkpart primary '"384"'MiB '"23499"'MiB'
+
+	# 23841MiB-256MiB-1MiB -2MiB
+	#sudo -n parted --script "$vmImageFile" 'mkpart primary '"384"'MiB '"23582"'MiB'
+
+	# 25.95GiB-1MiB
+	sudo -n parted --script "$vmImageFile" 'mkpart primary '"384"'MiB '"26571"'MiB'
+
+	# Tested successfully.
+	# 26.25GiB-1MiB
+	#sudo -n parted --script "$vmImageFile" 'mkpart primary '"384"'MiB '"26879"'MiB'
 	
 	
 	
@@ -14463,7 +14746,76 @@ _live_more() {
 
 
 
+_live_preload_here() {
+	cat << 'CZXWXcRMTo8EmM8i4d'
+#!/bin/sh
 
+PREREQ=""
+
+prereqs()
+{
+    echo "$PREREQ"
+}
+
+case "$1" in
+prereqs)
+    prereqs
+    exit 0
+;;
+esac
+
+
+echo "_____ preload: /root/home -not core -not .nix -not .gcloud"
+find /root/home -not \( -path \/home/\*/core\* -prune \) -not \( -path \/home/\*/.nix\* -prune \) -not \( -path \/home/\*/.gcloud\* -prune \) -type f -exec cat {} > /dev/null \;
+find /root/home/*/klipper -type f -exec cat {} > /dev/null \;
+find /root/home/*/moonraker -type f -exec cat {} > /dev/null \;
+find /root/home/*/moonraker-env -type f -exec cat {} > /dev/null \;
+find /root/home/*/mainsail -type f -exec cat {} > /dev/null \;
+
+
+echo "_____ preload: /root/usr/lib -maxdepth 9 -iname '*.so*'"
+find /root/usr/lib -maxdepth 9 -type f -iname '*.so*' -exec cat {} > /dev/null \;
+
+
+echo "_____ preload: /root/home -not core -not .nix -not .gcloud"
+find /root/home/*/.config -type f -exec cat {} > /dev/null \;
+find /root/home/*/.kde -type f -exec cat {} > /dev/null \;
+find /root/home/*/.ubcore -type f -exec cat {} > /dev/null \;
+find /root/home -maxdepth 1 -type f -exec cat {} > /dev/null \;
+
+
+echo "_____ preload: /root/root"
+find /root/root -type f -exec cat {} > /dev/null \;
+
+
+echo '_____ preload: /root/var'
+find /root/var -type f -exec cat {} > /dev/null \;
+
+
+echo '_____ preload: /root/usr/lib/modules'
+find /root/usr/lib/modules -type f -exec cat {} > /dev/null \;
+
+echo '_____ preload: /root/boot'
+find /root/boot -type f -exec cat {} > /dev/null \;
+
+echo '_____ preload: /root/usr/lib/systemd'
+find /root/usr/lib/systemd -type f -exec cat {} > /dev/null \;
+
+echo '_____ preload: /root/usr/bin'
+find /root/usr/bin -type f -exec cat {} > /dev/null \;
+
+echo '_____ preload: /root/bin'
+find /root/bin -type f -exec cat {} > /dev/null \;
+
+echo '_____ preload: /root/sbin'
+find /root/sbin -type f -exec cat {} > /dev/null \;
+
+echo '_____ preload: /root/etc'
+find /root/etc -type f -exec cat {} > /dev/null \;
+
+
+CZXWXcRMTo8EmM8i4d
+}
 
 
 # https://manpages.debian.org/testing/live-boot-doc/live-boot.7.en.html
@@ -14507,6 +14859,35 @@ CZXWXcRMTo8EmM8i4d
 }
 
 
+_write_revert_live() {
+	_messagePlain_nominal 'Attempt: _openChRoot'
+	! "$scriptAbsoluteLocation" _openChRoot && _messagePlain_bad 'fail: _openChRoot' && _messageFAIL
+
+	#_chroot systemctl enable nfs-blkmap
+	#_chroot systemctl enable nfs-idmapd
+	#_chroot systemctl enable nfs-mountd
+	#_chroot systemctl enable nfs-server
+	#_chroot systemctl enable nfsdcld
+
+	#_chroot systemctl enable ssh
+	#_chroot systemctl enable sshd
+
+	_chroot systemctl enable exim4
+
+
+	sudo -n rm -f "$globalVirtFS"/usr/share/initramfs-tools/scripts/init-bottom/preload_run
+
+	[[ -e "$globalVirtFS"/etc/systemd/system.conf.orig ]] && sudo -n mv -f "$globalVirtFS"/etc/systemd/system.conf.orig "$globalVirtFS"/etc/systemd/system.conf
+
+
+	_chroot update-initramfs -u -k all
+
+	_messagePlain_nominal 'Attempt: _closeChRoot'
+	#sudo -n umount "$globalVirtFS"/boot/efi > /dev/null 2>&1
+	#sudo -n umount "$globalVirtFS"/boot > /dev/null 2>&1
+	! "$scriptAbsoluteLocation" _closeChRoot && _messagePlain_bad 'fail: _closeChRoot' && _messageFAIL
+}
+
 # https://willhaley.com/blog/custom-debian-live-environment-grub-only/
 # https://web.archive.org/web/*/https://willhaley.com/blog/custom-debian-live-environment-grub-only/*
 # https://itnext.io/how-to-create-a-custom-ubuntu-live-from-scratch-dd3b3f213f81
@@ -14541,7 +14922,57 @@ _live_sequence_in() {
 	_start
 	
 	cd "$safeTmp"
-	
+
+	_messagePlain_nominal 'Attempt: _openChRoot'
+	! "$scriptAbsoluteLocation" _openChRoot && _messagePlain_bad 'fail: _openChRoot' && _messageFAIL
+
+	##_chroot systemctl disable nfs-blkmap
+	##_chroot systemctl disable nfs-idmapd
+	##_chroot systemctl disable nfs-mountd
+	##_chroot systemctl disable nfs-server
+	##_chroot systemctl disable nfsdcld
+
+	##_chroot systemctl disable ssh
+	##_chroot systemctl disable sshd
+
+	#_chroot systemctl disable exim4
+
+
+	_live_preload_here | sudo -n tee "$globalVirtFS"/usr/share/initramfs-tools/scripts/init-bottom/preload_run > /dev/null
+	_chroot chown root:root /usr/share/initramfs-tools/scripts/init-bottom/preload_run
+	_chroot chmod 755 /usr/share/initramfs-tools/scripts/init-bottom/preload_run
+
+	# Apparent repeated success with 'DefaultTasksMax=12' . In one case, some services - SMART and NetworkManager - may have failed to start within timeouts. Some have certainly been close to timeout.
+	# Consider reducing below 12 iteratively.
+	# Alternatively, this may need to increase. Cron jobs may otherwise fail with such error message as 'fork retry resource temporarily unavailable' .
+	# Uncertain whether 'DefaultTasksMax' limits only the number of systemd services started simuntaneously, or also the number of threads total prior to interactive shell.
+	sudo -n mv -n "$globalVirtFS"/etc/systemd/system.conf "$globalVirtFS"/etc/systemd/system.conf.orig
+	echo '[Manager]
+DefaultTasksMax=24' | sudo -n tee "$globalVirtFS"/etc/systemd/system.conf > /dev/null
+
+
+	_chroot update-initramfs -u -k all
+
+
+
+	# Solely to provide more information to convert 'vm-live.iso' back to 'vm.img' offline from only a Live BD-ROM disc .
+	mkdir -p "$safeTmp"/root002
+	#sudo -n cp -a "$globalVirtFS"/boot "$safeTmp"/root002/boot-copy
+	sudo -n rsync -a --progress --exclude "lost+found" "$globalVirtFS"/boot "$safeTmp"/root002/boot-copy
+	sudo -n cp -a "$globalVirtFS"/etc/fstab  "$safeTmp"/root002/fstab-copy
+
+
+
+	_messagePlain_nominal 'Attempt: _closeChRoot'
+	#sudo -n umount "$globalVirtFS"/boot/efi > /dev/null 2>&1
+	#sudo -n umount "$globalVirtFS"/boot > /dev/null 2>&1
+	! "$scriptAbsoluteLocation" _closeChRoot && _messagePlain_bad 'fail: _closeChRoot' && _messageFAIL
+
+
+
+
+
+	export safeToDeleteGit="true"
 	[[ -e "$scriptLocal"/livefs ]] && _safeRMR "$scriptLocal"/livefs
 	[[ -e "$scriptLocal"/livefs ]] && _messageFAIL
 	
@@ -14583,7 +15014,115 @@ _live_sequence_in() {
 	# TODO: Consider LZO compression and such.
 	# TODO: May need to install live-boot , firmware-amd-graphics
 	#sudo -n mksquashfs "$globalVirtFS" "$scriptLocal"/livefs/image/live/filesystem.squashfs -no-xattrs -noI -noD -noF -noX -comp lzo -Xalgorithm lzo1x_1 -e boot -e etc/fstab
-	sudo -n mksquashfs "$globalVirtFS" "$scriptLocal"/livefs/image/live/filesystem.squashfs -no-xattrs -noI -noX -comp lzo -Xalgorithm lzo1x_1 -e boot -e etc/fstab
+	#sudo -n mksquashfs "$globalVirtFS" "$scriptLocal"/livefs/image/live/filesystem.squashfs -b  -no-xattrs -noI -noX -comp lzo -Xalgorithm lzo1x_1 -e boot -e etc/fstab
+
+
+
+
+	#mkdir -p "$safeTmp"/root001
+	#sudo -n cp -a "$globalVirtFS"/home  "$safeTmp"/root001/
+
+	#mkdir -p "$safeTmp"/recycle
+	#sudo -n mv -f "$safeTmp"/root001/home/user/* "$safeTmp"/recycle/
+	#sudo -n mv -f "$safeTmp"/recycle/core "$safeTmp"/root001/home/user/
+	#sudo -n chown -R "$USER":"$USER" "$safeTmp"/recycle
+	#_safeRMR "$safeTmp"/recycle
+
+	#mkdir -p "$safeTmp"/recycle
+	#sudo -n mv -f "$safeTmp"/root001/home/* "$safeTmp"/recycle/
+	#sudo -n mv -f "$safeTmp"/recycle/user "$safeTmp"/root001/home/
+	#sudo -n chown -R "$USER":"$USER" "$safeTmp"/recycle
+	#_safeRMR "$safeTmp"/recycle
+
+	#_messagePlain_probe_cmd ls -ld "$safeTmp"/root001
+	#_messagePlain_probe_cmd ls -ld "$safeTmp"/root001/home
+	#_messagePlain_probe_cmd ls -ld "$safeTmp"/root001/home/user
+	#_messagePlain_probe_cmd ls -ld "$safeTmp"/root001/home/user/core
+	#_messagePlain_probe_cmd ls -l "$safeTmp"/root001/home/user/core/
+
+	#sudo -n mksquashfs "$safeTmp"/root001 "$scriptLocal"/livefs/image/live/filesystem.squashfs -b 65536 -no-xattrs -noI -noX -comp lzo -Xalgorithm lzo1x_1 -e boot -e etc/fstab
+	#sudo -n chown -R "$USER":"$USER" "$safeTmp"/root001
+	#_safeRMR "$safeTmp"/root001
+
+
+	# https://github.com/openwrt/openwrt/issues/9974
+	# http://neoscientists.org/~tmueller/binsort/
+	#sudo -n mksquashfs "$globalVirtFS" "$scriptLocal"/livefs/image/live/filesystem.squashfs -b 262144 -no-xattrs -noI -noX -comp lzo -Xalgorithm lzo1x_1 -e home/user/core -e boot -e etc/fstab
+
+
+
+	# Solely to provide more information to convert 'vm-live.iso' back to 'vm.img' offline from only a Live BD-ROM disc .
+	_messagePlain_nominal 'mksquashfs: root002: boot-copy , fstab-copy'
+	_messagePlain_probe_cmd df -h
+	if ! _messagePlain_probe_cmd sudo -n mksquashfs "$safeTmp"/root002 "$scriptLocal"/livefs/image/live/filesystem.squashfs -b 262144 -no-xattrs -noI -noX -comp lzo -Xalgorithm lzo1x_1 -e boot -e etc/fstab
+	then
+		_messageFAIL
+		_stop 1
+		return 1
+	fi
+	du -sh "$scriptLocal"/livefs/image/live/filesystem.squashfs
+	sudo -n chown -R "$USER":"$USER" "$safeTmp"/root002
+	export safeToDeleteGit="true"
+	_safeRMR "$safeTmp"/root002
+	if [[ -e "$safeTmp"/root002 ]]
+	then
+		_messageFAIL
+		_stop 1
+		return 1
+	fi
+
+	mkdir -p "$safeTmp"/root001
+	sudo -n mkdir -p "$safeTmp"/root001/home
+	#sudo -n cp -a "$globalVirtFS"/home "$safeTmp"/root001/
+	sudo -n mount --bind "$globalVirtFS"/home "$safeTmp"/root001/home
+	_messagePlain_probe_cmd mountpoint "$safeTmp"/root001/home
+	_messagePlain_probe_cmd sudo -n ls -l "$safeTmp"/root001/home/user/core/
+	_messagePlain_probe_cmd sudo -n du -sh "$safeTmp"/root001/home
+	_messagePlain_nominal 'mksquashfs: root001: home'
+	_messagePlain_probe_cmd df -h
+	if ! _messagePlain_probe_cmd sudo -n mksquashfs "$safeTmp"/root001 "$scriptLocal"/livefs/image/live/filesystem.squashfs -b 262144 -no-xattrs -noI -noX -comp lzo -Xalgorithm lzo1x_1 -e boot -e etc/fstab
+	then
+		_messageFAIL
+		_stop 1
+		return 1
+	fi
+	du -sh "$scriptLocal"/livefs/image/live/filesystem.squashfs
+	sudo -n umount "$safeTmp"/root001/home
+	if mountpoint "$safeTmp"/root001/home
+	then
+		_messageFAIL
+		_stop 1
+		return 1
+	fi
+	sudo -n chown -R "$USER":"$USER" "$safeTmp"/root001
+	export safeToDeleteGit="true"
+	_safeRMR "$safeTmp"/root001
+	if [[ -e "$safeTmp"/root001 ]]
+	then
+		_messageFAIL
+		_stop 1
+		return 1
+	fi
+
+	_messagePlain_nominal 'mksquashfs: globalVirtFS'
+	_messagePlain_probe_cmd df -h
+	if ! _messagePlain_probe_cmd sudo -n mksquashfs "$globalVirtFS" "$scriptLocal"/livefs/image/live/filesystem.squashfs -b 262144 -no-xattrs -noI -noX -comp lzo -Xalgorithm lzo1x_1 -e home -e boot -e etc/fstab
+	then
+		_messageFAIL
+		_stop 1
+		return 1
+	fi
+	du -sh "$scriptLocal"/livefs/image/live/filesystem.squashfs
+
+
+
+
+
+
+
+
+
+
 	
 	local currentFilesList
 	
@@ -14619,7 +15158,7 @@ _live_sequence_in() {
 	
 	
 	
-	
+	_write_revert_live
 	
 	
 	
@@ -14678,6 +15217,7 @@ _live() {
 		_stop 1
 	fi
 	
+	export safeToDeleteGit="true"
 	_safeRMR "$scriptLocal"/livefs
 	
 	
@@ -16723,6 +17263,8 @@ default = user
 [wsl2]
 nestedVirtualization=true
 
+[automount]
+options = "metadata"
 
 CZXWXcRMTo8EmM8i4d
 }
@@ -16825,14 +17367,116 @@ _write_msw_WSLENV() {
 
 
 
+_wsl_desktop-waitUp_wmctrl() {
+    while [[ $(wmctrl -d 2>/dev/null | wc -l) -lt 1 ]]
+    do
+        sleep 0.2
+    done
+}
+_wsl_desktop-waitDown_wmctrl() {
+    while [[ $(wmctrl -d 2>/dev/null | wc -l) -gt 1 ]]
+    do
+        sleep 0.4
+    done
+}
+_here_wsl_desktop_startup_script() {
+    cat << CZXWXcRMTo8EmM8i4d
+#!/usr/bin/env bash
+export DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS"
+export DBUS_SESSION_BUS_PID="$DBUS_SESSION_BUS_PID"
+export DBUS_SESSION_BUS_WINDOWID="$DBUS_SESSION_BUS_WINDOWID"
+export QT_QPA_PLATFORMTHEME= ; unset QT_QPA_PLATFORMTHEME ; export LANG="C"
+export DESKTOP_SESSION=plasma
+#bash "$scriptAbsoluteLocation" _wsl_desktop-waitUp_wmctrl ; sleep 0.6
+export LANG="C"
+CZXWXcRMTo8EmM8i4d
 
+#dbus-run-session
+_safeEcho_newline 'exec '"$@"' &'
+
+    cat << CZXWXcRMTo8EmM8i4d
+#disown -h \$!
+disown
+disown -a -h -r
+disown -a -r
+rm -f "\$HOME"/.config/plasma-workspace/env/tmp_wsl_desktop.sh
+rm -f "\$HOME"/.config/tmp_wsl_desktop.sh
+sudo -n rm -f /etc/xdg/autostart/tmp_wsl_desktop.desktop
+rm -f "\$HOME"/.config/systemd/user/tmp_wsl_desktop.service
+#bash "$scriptAbsoluteLocation" _wsl_desktop-waitDown_wmctrl
+#currentStopJobs=\$(jobs -p -r 2> /dev/null) ; [[ "\$displayStopJobs" != "" ]] && kill \$displayStopJobs > /dev/null 2>&1
+CZXWXcRMTo8EmM8i4d
+}
+_wsl_desktop_startup_plasmaWorkspaceEnv_write() {
+    mkdir -p "$HOME"/.config/plasma-workspace/env/
+    _here_wsl_desktop_startup_script "$@" > "$HOME"/.config/plasma-workspace/env/tmp_wsl_desktop.sh
+    chmod u+x "$HOME"/.config/plasma-workspace/env/tmp_wsl_desktop.sh
+}
+_here_wsl_desktop_startup_xdg() {
+    cat << CZXWXcRMTo8EmM8i4d
+[Desktop Entry]
+Comment=
+Exec="$HOME"/.config/tmp_wsl_desktop.sh > /dev/null
+GenericName=
+Icon=exec
+MimeType=
+Name=
+Path=
+StartupNotify=false
+Terminal=false
+TerminalOptions=
+Type=Application
+CZXWXcRMTo8EmM8i4d
+}
+_wsl_desktop_startup_xdg_write() {
+    mkdir -p "$HOME"/.config/
+    _here_wsl_desktop_startup_script "$@" > "$HOME"/.config/tmp_wsl_desktop.sh
+    chmod u+x "$HOME"/.config/tmp_wsl_desktop.sh
+
+    _here_wsl_desktop_startup_xdg | sudo -n tee /etc/xdg/autostart/tmp_wsl_desktop.desktop > /dev/null
+}
+# https://bbs.archlinux.org/viewtopic.php?id=279740
+_here_wsl_desktop_startup_systemd() {
+    cat << CZXWXcRMTo8EmM8i4d
+[Unit]
+After=xdg-desktop-autostart.target
+
+[Install]
+WantedBy=xdg-desktop-autostart.target
+
+[Service]
+Type=oneshot
+ExecStart="$HOME"/.config/tmp_wsl_desktop.sh
+CZXWXcRMTo8EmM8i4d
+}
+_wsl_desktop_startup_systemd_write() {
+    mkdir -p "$HOME"/.config/
+    _here_wsl_desktop_startup_script "$@" > "$HOME"/.config/tmp_wsl_desktop.sh
+    chmod u+x "$HOME"/.config/tmp_wsl_desktop.sh
+    
+    mkdir -p "$HOME"/.config/systemd/user/
+    _here_wsl_desktop_startup_systemd | sudo -n tee "$HOME"/.config/systemd/user/tmp_wsl_desktop.service > /dev/null
+
+    systemctl --user stop tmp_wsl_desktop
+    systemctl --user daemon-reload
+    systemctl --user enable tmp_wsl_desktop
+    systemctl --user enable tmp_wsl_desktop.service
+}
 _wsl_desktop() {
+    local functionEntryPWD
+    functionEntryPWD="$PWD"
+
     (
         _messageNormal "init: _wsl_desktop"
+        if [[ "$PWD" == "/mnt/"?"/WINDOWS/system32" ]] || [[ "$PWD" == "/mnt/"?"/Windows/system32" ]] || [[ "$PWD" == "/mnt/"?"/windows/system32" ]]
+        then
+            _messagePlain_probe 'reject: /mnt/'?'/WINDOWS/system32'
+            _messagePlain_probe_cmd cd
+        fi
 
         export QT_QPA_PLATFORMTHEME=
         unset QT_QPA_PLATFORMTHEME
-        _set_qt5ct
+        #_set_qt5ct
 
         
         # nix-shell --run "locale -a" -p bash
@@ -16846,25 +17490,105 @@ _wsl_desktop() {
         local xephyrDisplay
         local xephyrDisplayValid
         xephyrDisplayValid="false"
-        for (( xephyrDisplay = 20 ; xephyrDisplay <= 60 ; xephyrDisplay++ ))
-        do
-            ! [[ -e /tmp/.X"$xephyrDisplay"-lock ]] && ! [[ -e /tmp/.X11-unix/X"$xephyrDisplay" ]] && xephyrDisplayValid="true" && _messagePlain_good 'found: unused X11 display= '"$xephyrDisplay" && break
-        done
+        
+        if [[ "$2" == *"panel.sh" ]] || [[ "$2" == *"panel"*".sh" ]] || [[ "$2" == *"panel"*".bat" ]]
+        then
+            for (( xephyrDisplay = 53 ; xephyrDisplay <= 79 ; xephyrDisplay++ ))
+            do
+                ! [[ -e /tmp/.X"$xephyrDisplay"-lock ]] && ! [[ -e /tmp/.X11-unix/X"$xephyrDisplay" ]] && xephyrDisplayValid="true" && _messagePlain_good 'found: unused X11 display= '"$xephyrDisplay" && break
+            done
+        else
+            # RESERVED - 53-79 (or greater) for PanelBoard
+            for (( xephyrDisplay = 13 ; xephyrDisplay <= 52 ; xephyrDisplay++ ))
+            do
+                ! [[ -e /tmp/.X"$xephyrDisplay"-lock ]] && ! [[ -e /tmp/.X11-unix/X"$xephyrDisplay" ]] && xephyrDisplayValid="true" && _messagePlain_good 'found: unused X11 display= '"$xephyrDisplay" && break
+            done
+        fi
 
         _messagePlain_nominal 'Xephyr.'
         local xephyrResolution
         xephyrResolution="1600x1200"
-        [[ "$1" != "" ]] && xephyrResolution="$1"
-        if type -p dbus-run-session > /dev/null 2>&1 && type -p startplasma-x11 > /dev/null 2>&1
+        [[ "$1" == *"x"* ]] && xephyrResolution="$1"
+        shift
+        if type -p dbus-launch > /dev/null 2>&1 && type -p dbus-run-session > /dev/null 2>&1 && type -p startplasma-x11 > /dev/null 2>&1
         then
-            ( Xephyr -screen "$xephyrResolution" :"$xephyrDisplay" & ( export DISPLAY=:"$xephyrDisplay" ; "$HOME"/core/installations/xclipsync/xclipsync & dbus-run-session startplasma-x11 2>/dev/null ) )
+            export -f _wsl_desktop-waitUp_wmctrl
+            export -f _wsl_desktop-waitDown_wmctrl
+            export -f _set_qt5ct
+            
+            #if [[ "$descriptiveSelf" != ""]]
+            #then
+                #export currentPlasmaSession="$HOME"/.ubtmp/plasmaSession-"$descriptiveSelf"
+            #else
+                #export currentPlasmaSession="$HOME"/.ubtmp/plasmaSession-"$sessionid"
+            #fi
+
+            #_set_qt5ct
+            #"$@"
+            
+            (
+                Xephyr -screen "$xephyrResolution" :"$xephyrDisplay" &#disown -h $!
+                disown
+                disown -a -h -r
+                disown -a -r
+                (
+
+                    export DISPLAY=:"$xephyrDisplay"
+                    export QT_QPA_PLATFORMTHEME=
+                    unset QT_QPA_PLATFORMTHEME
+                    export LANG="C"
+
+                    export DESKTOP_SESSION=plasma
+
+                    export $(dbus-launch)
+
+                    "$HOME"/core/installations/xclipsync/xclipsync &
+                    disown
+                    disown -a -h -r
+                    disown -a -r
+
+                    # https://blog.davidedmundson.co.uk/blog/plasma-and-the-systemd-startup/
+                    # https://bbs.archlinux.org/viewtopic.php?id=279740
+                    # https://www.reddit.com/r/archlinux/comments/ves6mh/kde_autostart_mostly_no_longer_working/
+                    ##kwriteconfig5 --file startkderc --group General --key systemdBoot false
+                    ##kwriteconfig5 --file startkderc --group General --key systemdBoot true
+                    #_wsl_desktop_startup_plasmaWorkspaceEnv_write "$@"
+                    _wsl_desktop_startup_xdg_write "$@"
+                    #_wsl_desktop_startup_systemd_write "$@"
+
+                    ##dbus-run-session 
+                    exec startplasma-x11 > /dev/null 2>&1 &
+
+
+                    #sleep 0.1
+                    #_wsl_desktop-waitUp_wmctrl
+                    ##sleep 3
+
+                    #exec "$@" > /dev/null 2>&1 &
+
+                    echo '---------------------------------------------'
+                    wait
+                    echo '+++++++++++++++++++++++++++++++++++++++++++++'
+                    
+                    export LANG="C"
+                    
+                    #_wsl_desktop-waitDown_wmctrl ; currentStopJobs=$(jobs -p -r 2> /dev/null) ; [[ "$displayStopJobs" != "" ]] && kill $displayStopJobs > /dev/null 2>&1
+
+                )
+
+                wait
+            )
+            #_wsl_desktop-waitDown_wmctrl ; currentStopJobs=$(jobs -p -r 2> /dev/null) ; [[ "$displayStopJobs" != "" ]] && kill $displayStopJobs > /dev/null 2>&1
             return 0
+            cd "$functionEntryPWD"
         fi
         _messagePlain_bad 'bad: missing: GUI'
         _messageFAIL
-
-        return 0
+        _stop 1
+        return 1
     )
+
+    cd "$functionEntryPWD"
 }
 ldesk() {
     _wsl_desktop "$@"
@@ -19556,6 +20280,10 @@ _git_shallow() {
 	_stop
 }
 
+
+
+
+
 #####Program
 
 _createBareGitRepo() {
@@ -19626,6 +20354,34 @@ _gitBare() {
 
 
 
+_self_gitMad_procedure() {
+	local functionEntryPWD
+	functionEntryPWD="$PWD"
+
+	cd "$scriptAbsoluteFolder"
+	_gitMad
+	
+	cd "$functionEntryPWD"
+}
+_self_gitMad() {
+	"$scriptAbsoluteLocation" _self_gitMad_procedure "$@"
+}
+# https://stackoverflow.com/questions/1580596/how-do-i-make-git-ignore-file-mode-chmod-changes
+_gitMad() {
+	git config core.fileMode false
+	git submodule foreach git config core.fileMode false
+	git submodule foreach git submodule foreach git config core.fileMode false
+	git submodule foreach git submodule foreach git submodule foreach git config core.fileMode false
+	git submodule foreach git submodule foreach git submodule foreach git submodule foreach git config core.fileMode false
+	git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git config core.fileMode false
+	git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git config core.fileMode false
+	git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git config core.fileMode false
+	git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git config core.fileMode false
+	git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git config core.fileMode false
+	git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git submodule foreach git config core.fileMode false
+}
+
+
 _gitBest_detect_github_procedure() {
 	[[ "$current_gitBest_source_GitHub" == "FAIL" ]] && export current_gitBest_source_GitHub=""
 	[[ "$current_gitBest_source_GitHub" != "" ]] && return
@@ -19685,14 +20441,32 @@ _gitBest_detect() {
 _gitBest_override_config_insteadOf-core() {
 	git config --global url."file://""$realHome""/core/infrastructure/""$1".insteadOf git@github.com:mirage335/"$1".git git@github.com:mirage335/"$1"
 }
+_gitBest_override_config_insteadOf-core--colossus() {
+	git config --global url."file://""$realHome""/core/infrastructure/""$1".insteadOf git@github.com:mirage335-colossus/"$1".git git@github.com:mirage335-colossus/"$1"
+}
+_gitBest_override_config_insteadOf-core--gizmos() {
+	git config --global url."file://""$realHome""/core/infrastructure/""$1".insteadOf git@github.com:mirage335-gizmos/"$1".git git@github.com:mirage335-gizmos/"$1"
+}
+_gitBest_override_config_insteadOf-core--distllc() {
+	git config --global url."file://""$realHome""/core/infrastructure/""$1".insteadOf git@github.com:soaringDistributions/"$1".git git@github.com:soaringDistributions/"$1"
+}
 
 
 _gitBest_override_github-github_core() {
-	_gitBest_override_config_insteadOf-core ubiquitous_bash
-	_gitBest_override_config_insteadOf-core extendedInterface
+	_gitBest_override_config_insteadOf-core--colossus ubiquitous_bash
+	_gitBest_override_config_insteadOf-core--colossus extendedInterface
+
+	_gitBest_override_config_insteadOf-core--gizmos flightDeck
+	_gitBest_override_config_insteadOf-core--gizmos kinematicBase-large
+
+	_gitBest_override_config_insteadOf-core--distllc ubDistBuild
+	_gitBest_override_config_insteadOf-core--distllc ubDistFetch
+	
+	_gitBest_override_config_insteadOf-core mirage335_documents
+	_gitBest_override_config_insteadOf-core mirage335GizmoScience
+
 	_gitBest_override_config_insteadOf-core scriptedIllustrator
 	_gitBest_override_config_insteadOf-core arduinoUbiquitous
-	_gitBest_override_config_insteadOf-core mirage335_documents
 	
 	_gitBest_override_config_insteadOf-core BOM_designer
 	_gitBest_override_config_insteadOf-core CoreAutoSSH
@@ -19813,7 +20587,7 @@ _test_gitBest() {
 	
 	_wantGetDep git
 	
-	_wantGetDep nmap
+	#_wantGetDep nmap
 	#_wantGetDep curl
 	#_wantGetDep wget
 }
@@ -22557,6 +23331,14 @@ _setupUbiquitous_accessories_here-nixenv-bashrc() {
 
 [[ -e "$HOME"/.nix-profile/etc/profile.d/nix.sh ]] && . "$HOME"/.nix-profile/etc/profile.d/nix.sh
 
+# WARNING: Binaries from Nix should not be prepended to Debian PATH, as they may be incompatible with other Debian software (eg. incorrect Python version).
+# Scripts that need to rely preferentially on Nix binaries should detect this situation, defining and calling an appropriate wrapper function.
+if [[ "\$PATH" == *"nix-profile/bin"* ]]
+then
+	export PATH=\$(echo "\$PATH" | sed 's|:'"$HOME"'/.nix-profile/bin||g;s|'"$HOME"'/.nix-profile/bin:||g')
+	export PATH="\$PATH":"$HOME"/.nix-profile/bin
+fi
+
 CZXWXcRMTo8EmM8i4d
 }
 
@@ -23730,6 +24512,27 @@ then
 		true
 		
 	fi
+elif uname -a | grep -i 'microsoft' > /dev/null 2>&1 && uname -a | grep -i 'WSL2' > /dev/null 2>&1
+then
+	if [[ "$tmpSelf" == "" ]]
+	then
+		export tmpWSL="$HOME"/.ubtmp
+		[[ "$realHome" != "" ]] && export tmpWSL="$realHome"/.ubtmp
+		[[ ! -e "$tmpWSL" ]] && mkdir -p "$tmpWSL"
+		
+		if [[ "$tmpWSL" != "" ]]
+		then
+			export descriptiveSelf="$sessionid"
+			type md5sum > /dev/null 2>&1 && [[ "$scriptAbsoluteLocation" != '/bin/'* ]] && [[ "$scriptAbsoluteLocation" != '/usr/'* ]] && export descriptiveSelf=$(_getScriptAbsoluteLocation | md5sum | head -c 2)$(echo "$sessionid" | head -c 16)
+			export tmpSelf="$tmpWSL"/"$descriptiveSelf"
+
+			[[ "$descriptiveSelf" == "" ]] && export tmpSelf="$tmpWSL"/"$sessionid"
+			true
+		fi
+
+		( [[ "$tmpSelf" == "" ]] || [[ "$tmpWSL" == "" ]] ) && export tmpSelf=/tmp/"$sessionid"
+		true
+	fi
 fi
 
 
@@ -24044,16 +24847,15 @@ _set_msw_qt5ct() {
 #  ~/.bash_profile
 #  ~/.profile
 _set_qt5ct() {
-    if [[ "$DISPLAY" != ":0" ]]
+    if [[ "$DISPLAY" == ":0" ]]
     then
+        export QT_QPA_PLATFORMTHEME=qt5ct
+    else
         export QT_QPA_PLATFORMTHEME=
         unset QT_QPA_PLATFORMTHEME
     fi
     
     _write_wsl_qt5ct_conf "$@"
-
-
-    export QT_QPA_PLATFORMTHEME=qt5ct
 
     return 0
 }
@@ -29321,7 +30123,12 @@ _prepare_abstract() {
 	else
 		if ! chown "$USER":"$USER" "$abstractfs_root" > /dev/null 2>&1
 		then
-			! /sbin/chown "$USER" "$abstractfs_root" && exit 1
+			if [[ -e /sbin/chown ]]
+			then
+				! /sbin/chown "$USER" "$abstractfs_root" && exit 1
+			else
+				! /usr/bin/chown "$USER" "$abstractfs_root" && exit 1
+			fi
 		fi
 	fi
 	
@@ -29341,7 +30148,12 @@ _prepare_abstract() {
 	else
 		if ! chown "$USER":"$USER" "$abstractfs_lock" > /dev/null 2>&1
 		then
-			! /sbin/chown "$USER" "$abstractfs_lock" && exit 1
+			if [[ -e /sbin/chown ]]
+			then
+				! /sbin/chown "$USER" "$abstractfs_lock" && exit 1
+			else
+				! /usr/bin/chown "$USER" "$abstractfs_lock" && exit 1
+			fi
 		fi
 	fi
 }
@@ -30237,10 +31049,20 @@ _testarglength() {
 	
 	
 	# Typical UNIX.
-	if [[ "$testArgLength" -lt 131071 ]]
+	# && [[ "$testArgLength" != "" ]]
+	if [[ "$testArgLength" -lt 131071 ]] && [[ "$testArgLength" != "-1" ]] && [[ "$testArgLength" != "undefined" ]]
 	then
+
 		# Typical Cygwin. Marginal result at best.
 		[[ "$testArgLength" -ge 32000 ]] && uname -a | grep -i 'cygwin' > /dev/null 2>&1 && _messagePASS && return 0
+		if _if_cygwin
+		then
+			# Fortunately, as of 2023-09-08 , from questions to the Cygwin mailing list, reportedly the undefined 'ARG_MAX' is a standards compliant delimiter of no limit except system resource limit.
+			# Unfortunately, as of 2023-09-07 , apparently Cygwin has removed the 'ARG_MAX' definition from the provided 'getconf' .
+			# Due to the narrower use case of Cygwin/MSW (as opposed to GNU/Linux) - not expecting to compile gEDA for Cygwin anytime soon - it will be more of a concern if other binaries in 'ubcp' cease to exist because newer versions of Cygwin packages upstream were failing to compile as a result. Hopefully, Cygwin itself has adequate testing to prevent release of such breakage.
+			#echo "$testArgLength"
+			return 0
+		fi
 		
 		_messageFAIL && _stop 1
 	fi
@@ -31925,14 +32747,28 @@ _package_ubcp_copy_copy() {
 	#cp -a "$1" "$2"
 	if [[ "$ubPackage_enable_ubcp" != 'true' ]]
 	then
-		rsync -av --progress --exclude "/ubcp/conemu" --exclude "/ubcp/cygwin" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.gz" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.xz" "$1" "$2"
+		if [[ "$skimfast" != "true" ]]
+		then
+			rsync -av --progress --exclude "/ubcp/conemu" --exclude "/ubcp/cygwin" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.gz" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.xz" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.flx" "$1" "$2"
+		else
+			rsync -a --exclude "/ubcp/conemu" --exclude "/ubcp/cygwin" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.gz" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.xz" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.flx" "$1" "$2"
+		fi
 	else
-		rsync -av --progress --exclude "/ubcp/package_ubcp-cygwinOnly.tar.gz" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.xz" "$1" "$2"
+		if [[ "$skimfast" != "true" ]]
+		then
+			rsync -av --progress --exclude "/ubcp/package_ubcp-cygwinOnly.tar.gz" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.xz" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.flx" "$1" "$2"
+		else
+			rsync -a --exclude "/ubcp/package_ubcp-cygwinOnly.tar.gz" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.xz" --exclude "/ubcp/package_ubcp-cygwinOnly.tar.flx" "$1" "$2"
+		fi
 	fi
 	
 	
 	rm -f "$safeTmp"/package/_local/package_ubcp-cygwinOnly.tar.gz
+	rm -f "$safeTmp"/package/_local/package_ubcp-cygwinOnly.tar.xz
+	rm -f "$safeTmp"/package/_local/package_ubcp-cygwinOnly.tar.flx
 	rm -f "$safeTmp"/package/_local/ubcp/package_ubcp-cygwinOnly.tar.gz
+	rm -f "$safeTmp"/package/_local/ubcp/package_ubcp-cygwinOnly.tar.xz
+	rm -f "$safeTmp"/package/_local/ubcp/package_ubcp-cygwinOnly.tar.flx
 	
 	return 0
 }
@@ -32104,7 +32940,7 @@ _package_procedure() {
 	! [[ "$ubPackage_enable_ubcp" == 'true' ]] && env XZ_OPT=-e9 tar -cJvf "$scriptAbsoluteFolder"/package.tar.xz .
 	#[[ "$ubPackage_enable_ubcp" == 'true' ]] && env GZIP=-9 tar -czvf "$scriptAbsoluteFolder"/package_ubcp.tar.gz .
 	#[[ "$ubPackage_enable_ubcp" == 'true' ]] && env XZ_OPT=-e9 tar -cJvf "$scriptAbsoluteFolder"/package_ubcp.tar.xz .
-	[[ "$ubPackage_enable_ubcp" == 'true' ]] && env XZ_OPT=-5 tar -cJvf "$scriptAbsoluteFolder"/package_ubcp.tar.xz .
+	[[ "$ubPackage_enable_ubcp" == 'true' ]] && env XZ_OPT="-5 -T0" tar -cJvf "$scriptAbsoluteFolder"/package_ubcp.tar.xz .
 	
 	if [[ "$ubPackage_enable_ubcp" == 'true' ]]
 	then
@@ -32153,6 +32989,9 @@ _vector_pcb_30MHzLowPass() {
 	# 4.2.0
 	[[ "$currentHash" == "f7d076b647a0" ]] && return 0
 	
+	# 4.3.0
+	[[ "$currentHash" == "ff6bf217da69" ]] && return 0
+	
 	
 	_messageFAIL
 	_stop 1
@@ -32180,7 +33019,8 @@ _vector_pcb_vector_usb_led() {
 	# 4.2.0
 	[[ "$currentHash" == "c80fd39dc332" ]] && return 0
 	
-	
+	# 4.3.0
+	[[ "$currentHash" == "d2808a6d50ff" ]] && return 0
 	
 	_messageFAIL
 	_stop 1
@@ -37447,6 +38287,7 @@ _compile_bash_utilities() {
 	
 	( [[ "$enUb_notLean" == "true" ]] || [[ "$enUb_getMinimal" == "true" ]] ) && includeScriptList+=( "os/distro"/getMost_special.sh )
 	( [[ "$enUb_notLean" == "true" ]] || [[ "$enUb_getMinimal" == "true" ]] ) && includeScriptList+=( "os/distro"/getMinimal_special.sh )
+	( [[ "$enUb_notLean" == "true" ]] || [[ "$enUb_getMinimal" == "true" ]] ) && includeScriptList+=( "os/distro/unix/openssl"/splice_openssl.sh )
 	
 	( [[ "$enUb_notLean" == "true" ]] || [[ "$enUb_getMinimal" == "true" ]] || [[ "$enUb_getMost_special_veracrypt" == "true" ]] ) && includeScriptList+=( "os/distro"/getMost_special_veracrypt.sh )
 	
@@ -37604,6 +38445,9 @@ _compile_bash_shortcuts() {
 	
 	( [[ "$enUb_repo" == "true" ]] && [[ "$enUb_git" == "true" ]] ) && includeScriptList+=( "shortcuts/git"/git.sh )
 	( [[ "$enUb_repo" == "true" ]] && [[ "$enUb_git" == "true" ]] ) && includeScriptList+=( "shortcuts/git"/gitBare.sh )
+
+	includeScriptList+=( "shortcuts/git"/gitMad.sh )
+
 	includeScriptList+=( "shortcuts/git"/gitBest.sh )
 	includeScriptList+=( "shortcuts/git"/wget_githubRelease_internal.sh )
 	
