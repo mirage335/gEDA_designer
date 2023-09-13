@@ -93,10 +93,6 @@ jobs:
         shell: bash
         run: |
           ~/core/infrastructure/ubiquitous_bash/ubiquitous_bash.sh _getMinimal_cloud
-      - name: _getMost
-        shell: bash
-        run: |
-          ~/core/infrastructure/ubiquitous_bash/ubiquitous_bash.sh _getMost
       - name: _get_from_nix
         shell: bash
         run: |
@@ -104,6 +100,10 @@ jobs:
           [[ -e "$HOME"/.nix-profile/etc/profile.d/nix.sh ]] && . "$HOME"/.nix-profile/etc/profile.d/nix.sh
           ~/core/infrastructure/ubiquitous_bash/ubiquitous_bash.sh _get_from_nix "$USER"
         timeout-minutes: 90
+      - name: _getMost
+        shell: bash
+        run: |
+          ~/core/infrastructure/ubiquitous_bash/ubiquitous_bash.sh _getMost
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
