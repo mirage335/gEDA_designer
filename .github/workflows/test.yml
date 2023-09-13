@@ -100,7 +100,7 @@ jobs:
       - name: _get_from_nix
         shell: bash
         run: |
-          ~/core/infrastructure/ubiquitous_bash/ubiquitous_bash.sh _get_from_nix
+          ~/core/infrastructure/ubiquitous_bash/ubiquitous_bash.sh _get_from_nix "$USER"
         timeout-minutes: 90
       - uses: actions/checkout@v3
         with:

@@ -25,6 +25,8 @@ _vector_pcb_30MHzLowPass() {
 	# 4.3.0
 	[[ "$currentHash" == "ff6bf217da69" ]] && return 0
 	
+	# Apparently, 4.2.2 , from Ubuntu .
+	[[ "$currentHash" == "765b5220dbbf" ]] && return 0
 	
 	_messageFAIL
 	_stop 1
