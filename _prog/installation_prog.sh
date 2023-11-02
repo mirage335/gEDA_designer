@@ -153,6 +153,7 @@ _vector_sch_vector_usb_led() {
 	# DANGER ONLY add hashes from versions known to produce ALL valid outputs for ALL packages . Test completely.
 	
 	# 4.2.0
+	# gnetlist --version   gEDA 1.10.2 (g5a69d90)
 	[[ "$currentHash" == "f24aede33154" ]] && return 0
 	
 	
