@@ -7,3 +7,6 @@
 [submodule "_lib/gEDA_Template"]
 	path = _lib/gEDA_Template
 	url = git@github.com:mirage335/gEDA_Template.git
+[submodule "_lib/mouserTools"]
+	path = _lib/mouserTools
+	url = git@github.com:mirage335/mouserTools.git

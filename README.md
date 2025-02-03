@@ -13,6 +13,8 @@ Designer scripts using and supplementing gEDA , and similar. Design typical asse
 "_pcb_color_wirewrap"
 "_pcb_color_rainbow"
 
+Also,  '_lib/mouserTools' has functions for correlating Mouser invoice line numbers to REFDES to greatly speed up manual PCB/Assembly (ie. manual component placement after solder paste stencil followed by hot-air reflow soldering).
+
 ## _gEDA_designer_geometry
 
 ### Attributes
